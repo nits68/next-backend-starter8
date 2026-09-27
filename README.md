@@ -396,7 +396,15 @@ npm run migration:plan -- --name uj_mezo
 npm run db:update -- --dry-run
 ```
 
-A `contract emit`-hez nem kell adatbázis-kapcsolat, ezért a build előtt is futtatható. A `prisma/contract.json` és a `prisma/contract.d.ts` állományokat commitolni kell.
+A `contract emit`-hez nem kell adatbázis-kapcsolat, ezért a build előtt is futtatható. A generált `prisma/contract.json` és `prisma/contract.d.ts` állományokat nem kell commitolni: klónozás után az `npm install` (a `postinstall` scripttel), a `next build` előtt pedig a `build` script újra előállítja őket. A `.gitignore` végére:
+
+```
+# prisma 8 (a "prisma contract emit" generálja, az npm install postinstall scriptje is)
+/prisma/contract.json
+/prisma/contract.d.ts
+```
+
+Ha már commitoltad őket, a gitből így vehetők ki (a lemezen megmaradnak): `git rm --cached prisma/contract.json prisma/contract.d.ts`.
 
 ./prisma/db.ts (az `orm init` létrehozta; egészítsd ki, hogy a Next.js hot reload miatt egyetlen kliens példány legyen):
 
