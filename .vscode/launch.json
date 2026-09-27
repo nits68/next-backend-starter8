@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug server-side",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev -- --inspect",
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**",
+        "!**/.next/dev/server/chunks/turbopack*/**"
+      ]
+    },
+    {
+      "name": "Debug seed",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run db:seed"
+    }
+  ]
+}
