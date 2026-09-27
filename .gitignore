@@ -41,3 +41,7 @@ yarn-error.log*
 next-env.d.ts
 node_modules/
 dist/
+
+# prisma 8 (a "prisma contract emit" generálja, az npm install postinstall scriptje is)
+/prisma/contract.json
+/prisma/contract.d.ts
