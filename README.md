@@ -142,6 +142,31 @@ A 2.2 pont utolsó parancsa (`npm install-scripts deny esbuild unrs-resolver wor
 
 Egyik script sem kell a működéshez: az `esbuild` (ezt a `tsx` használja) és az `unrs-resolver` (ezt az `eslint-config-next` használja) a platformnak megfelelő binárisát külön csomagként kapja meg, a script csak ellenőrzi. A `workerd` (Cloudflare futtatókörnyezet) a Prisma CLI felhős telepítő részéhez (Prisma Composer) kell, a `contract emit`, `db ...` és `migration ...` parancsok nem használják. Kipróbálva: a `tsx`, az ESLint és a `next build` a letiltás után is működik. A függőben lévő csomagok listája: `npm install-scripts ls`. Ha később új csomag kerül a listára, ugyanígy dönthetsz róla (`approve` = engedélyez, `deny` = letilt).
 
+### 2.4 További telepítési figyelmeztetések (ERESOLVE, vulnerabilities)
+
+**`npm warn ERESOLVE overriding peer dependency ... @effect/vitest ... effect`:** a Prisma CLI felhős telepítő részének (Prisma Composer) belső függőségei között van egy verzióütközés (az `alchemy` újabb `@effect/vitest`-et kér, mint amilyen `effect` verziót a Composer rögzít). Az npm feloldja, ezért csak figyelmeztetés. A `package.json`-ban egy `overrides` bejegyzés a Composer verziójához igazítja, így a figyelmeztetés eltűnik:
+
+```json
+"overrides": {
+  "@effect/vitest": "4.0.0-rc.115"
+}
+```
+
+(A Prisma CLI újabb verziójánál a bejegyzés feleslegessé válhat: ha a figyelmeztetés nélküle sem jelenik meg, törölhető.)
+
+**`13 vulnerabilities (5 moderate, 8 high)`:** mind a 13 a `prisma` parancssori eszköz saját függőségeiből jön (Prisma Composer: `alchemy`, `@prisma/composer`, `@prisma/dev`, `hono`; sémaelemző: `chevrotain`, `lodash`), amelyet csak fejlesztés közben, a saját gépen használunk. A futó alkalmazás függőségeiben (`next`, `@prisma/orm-postgres`, `dotenv`) nincs sérülékenység, ez így ellenőrizhető:
+
+```powershell
+npm audit --omit=dev
+```
+
+```
+found 0 vulnerabilities
+```
+
+> [!WARNING]
+> Az `npm audit fix --force` parancsot **ne** futtasd: a "javítás" a `prisma` csomagot a 7-es verzióra állítaná vissza (`fix: prisma@7.10.0`), amely nem ismeri a Prisma 8 contractot. A figyelmeztetések a Prisma 8 végleges kiadásával, a Prisma CLI frissítésekor várhatóan eltűnnek (`npm i -D prisma@latest`).
+
 ## 3. Prisma konfigurálása: ./prisma.config.ts
 
 A Prisma 8-ban nincs `datasource` és `generator` blokk. Az adatbázis típusát a `@prisma/orm-postgres/config` import, a kapcsolatot a `db.connection` határozza meg. Az `orm init` által létrehozott állományt cseréld le erre (a `DIRECT_URL` a Neonhoz kell, lásd 6.3; ha nincs megadva, a `DATABASE_URL`-t használja):
