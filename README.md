@@ -20,7 +20,7 @@ A kód mindkét esetben ugyanaz, csak a `.env` állományban lévő connection s
 > - **TypeScript 5.9+** (a `create-next-app` jelenleg 5.9.x-et telepít)
 > - **PostgreSQL 15+** (a 18.x ajánlott)
 > - `"type": "module"` a `package.json`-ban (az `orm init` beállítja)
-> - a Prisma parancssori eszköz **globálisan** telepítve (lásd 2.1)
+> - Windowson a telepítést és a Prisma parancsokat **PowerShell** terminálból futtasd (lásd 2.1)
 
 ## 0. Mi változott a Prisma 7-hez képest?
 
@@ -28,7 +28,7 @@ A Prisma 8 egy teljesen újraírt, tisztán TypeScript alapú ORM. A séma helye
 
 | Prisma 7                                                   | Prisma 8                                                                                 |
 | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `prisma` + `@prisma/client` + `@prisma/adapter-pg` + `pg`  | `@prisma/orm-postgres` (könyvtár, a `pg` drivert is hozza) + `prisma` CLI globálisan     |
+| `prisma` + `@prisma/client` + `@prisma/adapter-pg` + `pg`  | `prisma` (CLI) + `@prisma/orm-postgres` (könyvtár, a `pg` drivert is hozza)              |
 | `npx prisma init`                                          | `npx prisma@latest orm init --target postgres`                                           |
 | `prisma/schema.prisma`                                     | `prisma/contract.prisma`, első sora kötelezően: `// use prisma-8`                        |
 | `generator` és `datasource` blokk                          | nincs, a kapcsolat a `prisma.config.ts`-ben van                                          |
@@ -72,20 +72,21 @@ A Next.js 16-ban a Turbopack az alapértelmezés, erre már nincs kérdés. Az `
 
 ## 2. További külső csomagok telepítése, Prisma inicializálása
 
-### 2.1 A Prisma parancssori eszköz globális telepítése (gépenként egyszer)
+### 2.1 PowerShell terminál használata (Windows)
 
-> npm i -g prisma@latest<br>
+A telepítést és a Prisma parancsokat Windowson **PowerShell** terminálból futtasd (a VS Code beépített terminálja alapból PowerShell). A Prisma 8 CLI (release candidate) ugyanis hibát ad, ha a parancssor kisbetűs meghajtójellel áll a projekt mappájában:
 
-Ellenőrzés: `prisma --version`. Frissítés később ugyanezzel a paranccsal.
+```
+✘ [CLI.CONFIG_UNREADABLE] e:\...\prisma.config.ts could not be evaluated: config loading resolved E:/.../prisma.config.ts instead of e:\...\prisma.config.ts
+```
 
-**Miért globálisan?** A Prisma 8 parancssori eszköze (`prisma` csomag) magával hozza a Prisma felhős alkalmazás-telepítő eszközét (Prisma Composer), ami **kb. 100 000 fájl**. Ha a projektbe telepítenéd, a `node_modules` kb. 135 000 fájlból állna. Globálisan telepítve egyszer kerül a gépre (az npm globális mappájába), a projekt `node_modules` mappája pedig kb. **25 000** fájl marad (kevesebb, mint a Prisma 7-nél). A futó alkalmazás a CLI-t nem használja, csak az `@prisma/orm-postgres` könyvtárat. Globális telepítéssel a `prisma` parancs internet nélkül is működik, és a `package.json` scriptjei is megtalálják.
+A parancssorban (`cmd`) ez akkor fordul elő, ha a mappába kisbetűvel lépsz be (`cd /d e:\...`). A PowerShell a meghajtójelet mindig nagybetűsen adja át a programoknak (`cd e:\...` után is `E:\...`), így ott a hiba nem jön elő, bármelyik meghajtón (`C:`, `D:`, `E:` …) van a projekt.
 
 ### 2.2 A projekt csomagjai és a Prisma inicializálása
 
 > npm i -D prettier typescript-eslint tsx<br>
 > npx prisma@latest orm init --yes --target postgres --authoring psl --schema-path prisma/contract.prisma --write-env<br>
-> npm uninstall prisma<br>
-> npm install-scripts deny esbuild unrs-resolver<br>
+> npm install-scripts deny esbuild unrs-resolver workerd<br>
 
 A csomagok:
 
@@ -110,32 +111,36 @@ Az `orm init` a következőket végzi el:
 - kiegészíti a `.gitignore`-t, létrehozza a `.gitattributes`-t (a generált fájlok jelölésére)
 - a contractból legenerálja a `prisma/contract.json` és a `prisma/contract.d.ts` állományokat
 
-Az `npm uninstall prisma` (a `-g` kapcsoló nélkül) **csak a projektből** távolítja el az `orm init` által odatelepített CLI-t (és vele a kb. 100 000 fájlt). A 2.1 pontban globálisan telepített `prisma` megmarad, a továbbiakban azt használjuk. A `@prisma/cli-engine` maradjon, mert a `prisma.config.ts` ebből importál.
+A `prisma` CLI a projekt fejlesztői függősége, ezért a parancsokat `npx prisma ...` alakban (vagy a `package.json` scriptjeivel, `npm run ...`) kell futtatni, internet nélkül is működnek. A VS Code Prisma bővítménye is a projekt `node_modules/prisma` mappájából indítja a Prisma 8 nyelvi szerverét (IntelliSense, formázás, hibajelzés a `contract.prisma`-ban).
+
+A Prisma 8 CLI magával hozza a Prisma felhős alkalmazás-telepítő eszközét (Prisma Composer) is, ezért a `node_modules` mappa kb. 135 000 fájlból áll (a Prisma 7-nél kb. 30 000 volt). A futó alkalmazás ebből semmit nem használ, csak az `@prisma/orm-postgres` könyvtárat.
 
 **Ellenőrzés:** a `prisma` mappában legyen ott a `contract.json` és a `contract.d.ts`. Ha hiányoznak, a `prisma/db.ts` importjai hibát jeleznek (`Cannot find module './contract.d'`, `Cannot find module './contract.json'`). Ilyenkor futtasd le:
 
-> prisma contract emit<br>
+> npx prisma contract emit<br>
 
 ### 2.3 Telepítési figyelmeztetések (allowScripts)
 
 Az npm 11 minden telepítésnél figyelmeztet azokra a csomagokra, amelyek telepítéskor scriptet futtatnának, de nincs róluk döntés:
 
 ```
-npm warn allow-scripts 2 packages have install scripts not yet covered by allowScripts:
+npm warn allow-scripts 3 packages have install scripts not yet covered by allowScripts:
 npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
 npm warn allow-scripts   unrs-resolver@1.12.2 (postinstall: node postinstall.js)
+npm warn allow-scripts   workerd@1.20260901.1 (postinstall: node install.js)
 ```
 
-A 2.2 pont utolsó parancsa (`npm install-scripts deny esbuild unrs-resolver`) erről dönt: letiltja a két script futtatását, és a döntést a `package.json`-ba írja, így a figyelmeztetés többet nem jelenik meg:
+A 2.2 pont utolsó parancsa (`npm install-scripts deny esbuild unrs-resolver workerd`) erről dönt: letiltja a scriptek futtatását, és a döntést a `package.json`-ba írja, így a figyelmeztetés többet nem jelenik meg:
 
 ```json
 "allowScripts": {
   "esbuild": false,
-  "unrs-resolver": false
+  "unrs-resolver": false,
+  "workerd": false
 }
 ```
 
-Egyik script sem kell a működéshez: az `esbuild` (ezt a `tsx` használja) és az `unrs-resolver` (ezt az `eslint-config-next` használja) a platformnak megfelelő binárisát külön csomagként kapja meg, a script csak ellenőrzi. Kipróbálva: a `tsx`, az ESLint és a `next build` a letiltás után is működik. A függőben lévő csomagok listája: `npm install-scripts ls`. Ha később új csomag kerül a listára, ugyanígy dönthetsz róla (`approve` = engedélyez, `deny` = letilt).
+Egyik script sem kell a működéshez: az `esbuild` (ezt a `tsx` használja) és az `unrs-resolver` (ezt az `eslint-config-next` használja) a platformnak megfelelő binárisát külön csomagként kapja meg, a script csak ellenőrzi. A `workerd` (Cloudflare futtatókörnyezet) a Prisma CLI felhős telepítő részéhez (Prisma Composer) kell, a `contract emit`, `db ...` és `migration ...` parancsok nem használják. Kipróbálva: a `tsx`, az ESLint és a `next build` a letiltás után is működik. A függőben lévő csomagok listája: `npm install-scripts ls`. Ha később új csomag kerül a listára, ugyanígy dönthetsz róla (`approve` = engedélyez, `deny` = letilt).
 
 ## 3. Prisma konfigurálása: ./prisma.config.ts
 
@@ -160,7 +165,7 @@ export default definePrismaConfig({
 });
 ```
 
-A `definePrismaConfig` a `@prisma/cli-engine` csomagból jön (a `prisma/config` import csak akkor működne, ha a `prisma` csomag a projektbe lenne telepítve). A `prisma.config.ts` csak a Prisma CLI-nek szól (`contract emit`, `db ...`, `migration ...`), a futó Next.js alkalmazás nem olvassa.
+A `definePrismaConfig` az `orm init` által írt `@prisma/cli-engine` csomagból jön (a `prisma/config` import is működik, a kettő ugyanaz). A `prisma.config.ts` csak a Prisma CLI-nek szól (`contract emit`, `db ...`, `migration ...`), a futó Next.js alkalmazás nem olvassa.
 
 > [!WARNING]
 > Egy projekthez egy `prisma.config.ts` és egy `migrations` mappa tartozzon. A CLI a konfigurációs fájl mappájában lévő `migrations` mappát használja, és a szülőmappák `prisma.config.ts` állományait is beolvassa. Ha egy mappába két projektet teszel, a migrációik és a `db` hivatkozásuk (`migrations/app/refs/db.json`) összekeveredik.
@@ -364,53 +369,32 @@ Ellenőrzés: `npx eslint .` és `npx prettier --check .`
 
 ## 5. package.json scriptek, prisma/db.ts
 
-A `package.json` scriptjei (a `prisma` parancsot a globális telepítésből, a `scripts/prisma.mjs` indítón keresztül futtatják):
+A `package.json` scriptjei:
 
 ```json
 "scripts": {
   "dev": "next dev -p 3000",
-  "build": "node scripts/prisma.mjs contract emit && next build",
+  "build": "prisma contract emit && next build",
   "start": "next start",
-  "postinstall": "node scripts/prisma.mjs contract emit",
-  "contract:emit": "node scripts/prisma.mjs contract emit",
-  "db:init": "node scripts/prisma.mjs db init",
-  "db:update": "node scripts/prisma.mjs db update",
-  "db:verify": "node scripts/prisma.mjs db verify",
-  "db:sign": "node scripts/prisma.mjs db sign",
+  "postinstall": "prisma contract emit",
+  "contract:emit": "prisma contract emit",
+  "db:init": "prisma db init",
+  "db:update": "prisma db update",
+  "db:verify": "prisma db verify",
+  "db:sign": "prisma db sign",
   "db:seed": "tsx prisma/seed.ts",
-  "migration:plan": "node scripts/prisma.mjs migration plan",
-  "migration:status": "node scripts/prisma.mjs migration status",
-  "migrate": "node scripts/prisma.mjs db migrate --advance-ref db"
+  "migration:plan": "prisma migration plan",
+  "migration:status": "prisma migration status",
+  "migrate": "prisma db migrate --advance-ref db"
 }
 ```
 
-./scripts/prisma.mjs (a Prisma CLI indítása nagybetűs meghajtójellel):
-
-```js
-// A Prisma CLI indítása nagybetűs meghajtójellel (Windows: "e:\..." helyett "E:\...").
-// A Prisma 8 CLI kisbetűs meghajtójelnél CLI.CONFIG_UNREADABLE hibát ad.
-import { spawnSync } from "node:child_process";
-import process from "node:process";
-
-const cwd = process.cwd().replace(/^[a-z](?=:)/, (d) => d.toUpperCase());
-const result = spawnSync("prisma", process.argv.slice(2), { cwd, stdio: "inherit", shell: true });
-process.exit(result.status ?? 1);
-```
-
-**Miért kell?** A Prisma 8 CLI (release candidate) Windowson hibát ad, ha a parancssor kisbetűs meghajtójellel áll a projekt mappájában (pl. `e:\...>` vagy `d:\...>`, ami akkor fordul elő, ha a mappába kézzel, kisbetűvel lépsz be, vagy egy ilyen promptból indítod a VS Code-ot `code .`-tal):
-
-```
-✘ [CLI.CONFIG_UNREADABLE] e:\...\prisma.config.ts could not be evaluated: config loading resolved E:/.../prisma.config.ts instead of e:\...\prisma.config.ts
-```
-
-A `scripts/prisma.mjs` a meghajtójelet nagybetűsre javítja, és úgy indítja a `prisma` parancsot, így a scriptek bármelyik meghajtóról (`C:`, `D:`, `E:` …) és bármilyen módon megnyitott mappából működnek, Linuxon és macOS-en is (ott nincs meghajtójel, a script nem változtat semmit). Ezért érdemes a Prisma parancsokat **`npm run ...`-nal** futtatni; paraméterek a `--` után adhatók át:
+A Prisma parancsok a scriptekkel is futtathatók, paraméterek a `--` után adhatók át, pl.:
 
 ```powershell
 npm run migration:plan -- --name uj_mezo
 npm run db:update -- --dry-run
 ```
-
-A `prisma` parancs közvetlenül is használható, de akkor a parancssor nagybetűs meghajtójellel álljon a mappában (`cd /d E:\...`, PowerShellben `Set-Location E:\...`).
 
 A `contract emit`-hez nem kell adatbázis-kapcsolat, ezért a build előtt is futtatható. A `prisma/contract.json` és a `prisma/contract.d.ts` állományokat commitolni kell.
 
@@ -651,14 +635,14 @@ A hossz ellenőrzését ez nem kapcsolja ki: a túl hosszú szöveget az adatbá
 
 majd (a szerver fusson, és az adatbázis létezzen, lásd 6. pont):
 
-> prisma contract emit<br>
-> prisma db init<br>
+> npx prisma contract emit<br>
+> npx prisma db init<br>
 
 A `db init` üres adatbázison létrehozza a táblákat, majd "aláírja" az adatbázist: egy jelölőt (marker) ír bele, amelyből a Prisma tudja, melyik contract-verziónak felel meg. Emellett létrehozza a `migrations/app/refs/db.json` hivatkozást és a `migrations/snapshots` mappát, ezeket commitolni kell.
 
 ## 8. A contract a meglévő adatbázistáblákból is létrehozható
 
-> prisma contract infer --output ./prisma/contract.prisma<br>
+> npx prisma contract infer --output ./prisma/contract.prisma<br>
 
 A parancs felülírja a megadott contractot. A Prisma 7-es `db pull`-hoz képest sokkal olvashatóbb eredményt ad:
 
@@ -669,8 +653,8 @@ A parancs felülírja a megadott contractot. A Prisma 7-es `db pull`-hoz képest
 
 Átnézés után (modellnevek egyes számba: `Konyvek` → `Konyv`, a `@@map` maradjon!):
 
-> prisma contract emit<br>
-> prisma db sign<br>
+> npx prisma contract emit<br>
+> npx prisma db sign<br>
 
 A `db sign` ellenőrzi, hogy az adatbázis megfelel-e a contractnak, és aláírja (a táblák nem változnak). Ezután a migrációk a 9. pont szerint működnek.
 
@@ -686,9 +670,9 @@ Figyelj a típusokra, mielőtt emitálsz:
 
 Migrációval (ajánlott; a migrációk a `migrations/app` mappába kerülnek, ezeket commitolni kell):
 
-> prisma contract emit<br>
-> prisma migration plan --name valtozas_neve<br>
-> prisma db migrate --advance-ref db<br>
+> npx prisma contract emit<br>
+> npx prisma migration plan --name valtozas_neve<br>
+> npx prisma db migrate --advance-ref db<br>
 
 - A `migration plan` a contract előző és új változata közötti különbségből készíti el a migrációt, az adatbázishoz nem csatlakozik (shadow adatbázis sem kell). Kiírja a futtatandó SQL-t is.
 - Az első `migration plan` egy `baseline` migrációt is készít, amely a `db init` utáni állapotot rögzíti.
@@ -697,18 +681,18 @@ Migrációval (ajánlott; a migrációk a `migrations/app` mappába kerülnek, e
 
 Állapot és ellenőrzés:
 
-> prisma migration status<br>
-> prisma db verify<br>
+> npx prisma migration status<br>
+> npx prisma db verify<br>
 
 Gyors kísérletezéshez migráció nélkül (a Prisma 7-es `db push` megfelelője, lásd 10. pont):
 
-> prisma contract emit<br>
-> prisma db update<br>
+> npx prisma contract emit<br>
+> npx prisma db update<br>
 
 A kész migrációk alkalmazása egy másik adatbázisra (pl. Neonra, az aktív Neon `.env` blokkal): előbb nézd meg, mi fog lefutni, aztán futtasd, **`--advance-ref` nélkül**:
 
-> prisma db migrate --show<br>
-> prisma db migrate<br>
+> npx prisma db migrate --show<br>
+> npx prisma db migrate<br>
 
 ## 10. contract emit, db update, db sign – mikor melyiket?
 
@@ -938,8 +922,9 @@ DELETE http://localhost:3000/api/filmek/1
 
 ## 14. Hasznos trükkök, buktatók
 
-- **`'prisma' is not recognized as an internal or external command`:** nincs globálisan telepítve a Prisma CLI (2.1). Alternatíva telepítés nélkül: `npx prisma@latest ...` (ehhez internet kell).
-- **`CLI.CONFIG_UNREADABLE ... config loading resolved E:/... instead of e:\...`:** a parancssor kisbetűs meghajtójellel áll a mappában. Használd az `npm run ...` scripteket (a `scripts/prisma.mjs` javítja, lásd 5. pont), vagy lépj be újra nagybetűvel: `cd /d E:\...`.
+- **`'prisma' is not recognized as an internal or external command`:** a Prisma CLI a projekt fejlesztői függősége, ezért `npx prisma ...` alakban (vagy `npm run ...` scripttel) kell futtatni.
+- **Nincs IntelliSense és formázás a `contract.prisma`-ban:** a VS Code Prisma bővítménye a projekt `node_modules/prisma` mappájából indítja a Prisma 8 nyelvi szervert. Ellenőrizd, hogy le van-e futtatva az `npm install`, és hogy a contract első sora `// use prisma-8`, majd a VS Code-ban: **Ctrl+Shift+P → Developer: Reload Window**.
+- **`CLI.CONFIG_UNREADABLE ... config loading resolved E:/... instead of e:\...`:** a parancssor (`cmd`) kisbetűs meghajtójellel áll a mappában. Futtasd a parancsot PowerShellből (2.1 pont), vagy lépj be újra nagybetűvel: `cd /d E:\...`.
 - **`Cannot find module 'prisma/config'`:** a `prisma.config.ts`-ben a `definePrismaConfig`-et a `@prisma/cli-engine` csomagból kell importálni (3. pont).
 - **`Cannot find module '.../prisma/contract.json'`:** elmaradt a `prisma contract emit`. A contract minden módosítása után futtatni kell, különben a TypeScript sem látja az új mezőket (a VS Code-ban néha **TypeScript: Restart TS Server** is kell).
 - **`RUNTIME.TEMPORAL_UNAVAILABLE`:** a contractban `JsDate` nélküli dátumtípus (`DateTime`, `Timestamptz`, `Timestamp`, `temporal.updatedAt()`) szerepel, lásd 7. pont.

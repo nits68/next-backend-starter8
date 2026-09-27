@@ -175,7 +175,7 @@
               "createdAt": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/timestamptz-string@1",
+                  "codecId": "pg/timestamptz-date@1",
                   "kind": "scalar"
                 }
               },
@@ -396,7 +396,7 @@
             "users": {
               "columns": {
                 "createdAt": {
-                  "codecId": "pg/timestamptz-string@1",
+                  "codecId": "pg/timestamptz-date@1",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
@@ -455,7 +455,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "6ac5ec7919e6bed075372394de8dc11c6bd30566733627b0a38fb3129dc89d7c"
+    "storageHash": "bafd016cb47a6663da2d93e4ce5ed49078dc88aeee8c7e5c3355ec6f533ddf83"
   },
   "execution": {
     "executionHash": "dbfea841699bdefbf0beb4665f97866690db6add40bbd51d80f8f139a9a6114d",

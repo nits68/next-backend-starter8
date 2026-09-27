@@ -5,18 +5,18 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "node scripts/prisma.mjs contract emit && next build",
+    "build": "prisma contract emit && next build",
     "start": "next start",
-    "postinstall": "node scripts/prisma.mjs contract emit",
-    "contract:emit": "node scripts/prisma.mjs contract emit",
-    "db:init": "node scripts/prisma.mjs db init",
-    "db:update": "node scripts/prisma.mjs db update",
-    "db:verify": "node scripts/prisma.mjs db verify",
-    "db:sign": "node scripts/prisma.mjs db sign",
+    "postinstall": "prisma contract emit",
+    "contract:emit": "prisma contract emit",
+    "db:init": "prisma db init",
+    "db:update": "prisma db update",
+    "db:verify": "prisma db verify",
+    "db:sign": "prisma db sign",
     "db:seed": "tsx prisma/seed.ts",
-    "migration:plan": "node scripts/prisma.mjs migration plan",
-    "migration:status": "node scripts/prisma.mjs migration status",
-    "migrate": "node scripts/prisma.mjs db migrate --advance-ref db"
+    "migration:plan": "prisma migration plan",
+    "migration:status": "prisma migration status",
+    "migrate": "prisma db migrate --advance-ref db"
   },
   "dependencies": {
     "@prisma/orm-postgres": "^8.0.0-rc.12",
@@ -30,12 +30,14 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.6",
     "prettier": "^3.9.9",
+    "prisma": "^8.0.0-rc.17",
     "tsx": "^4.23.15",
     "typescript": "^5",
     "typescript-eslint": "^8.70.1"
   },
   "allowScripts": {
     "esbuild": false,
-    "unrs-resolver": false
+    "unrs-resolver": false,
+    "workerd": false
   }
 }
