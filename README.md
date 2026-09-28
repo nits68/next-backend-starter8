@@ -413,7 +413,7 @@ A `contract emit`-hez nem kell adatbázis-kapcsolat, ezért a build előtt is fu
 
 Ha már commitoltad őket, a gitből így vehetők ki (a lemezen megmaradnak): `git rm --cached prisma/contract.json prisma/contract.d.ts`.
 
-./prisma/db.ts (az `orm init` létrehozta; egészítsd ki, hogy a Next.js hot reload miatt egyetlen kliens példány legyen):
+./prisma/db.ts (az `orm init` létrehozta; egészítsd ki, hogy a Next.js hot reload miatt egyetlen kliens példány legyen, de a contract változásakor új készüljön):
 
 ```ts
 import "dotenv/config";
@@ -422,15 +422,24 @@ import type { Contract } from "./contract.d";
 import contractJson from "./contract.json" with { type: "json" };
 
 const createDb = () => postgres<Contract>({ contractJson, url: process.env["DATABASE_URL"]! });
+type Db = ReturnType<typeof createDb>;
 
-// egyetlen kliens példány a Next.js hot reload miatt
-const globalForDb = globalThis as unknown as { db?: ReturnType<typeof createDb> };
-export const db = globalForDb.db ?? createDb();
-if (process.env.NODE_ENV !== "production") globalForDb.db = db;
+// Egyetlen kliens példány a Next.js hot reload miatt. Ha a contract megváltozik
+// (prisma contract emit), új kliens készül, a régi kapcsolatai lezárulnak.
+const globalForDb = globalThis as unknown as { db?: Db; dbContractHash?: string };
+const contractHash = contractJson.storage.storageHash;
 
+if (!globalForDb.db || globalForDb.dbContractHash !== contractHash) {
+  void globalForDb.db?.close();
+  globalForDb.db = createDb();
+  globalForDb.dbContractHash = contractHash;
+}
+
+export const db = globalForDb.db;
 export default db;
 ```
 
+- **Miért nem elég a kliens egyszerű megtartása?** A hot reload során a `db.ts` újrafut, ezért a klienst a `globalThis`-en tároljuk, különben minden mentés új kapcsolatkészletet nyitna. Ha azonban mindig a régi klienst adnánk vissza, a `contract emit` után is a **régi contracttal** dolgozna: az új modellek, mezők "nem léteznének" (pl. `Cannot read properties of undefined (reading 'all')`), amíg a fejlesztői szervert újra nem indítod. Ezért a kliens a contract hash-ét (`storageHash`) is megjegyzi, és változáskor újat készít.
 - A kliens az első lekérdezéskor csatlakozik, a kapcsolatot a `db.close()` zárja le (Next.js-ben erre nincs szükség, csak scripteknél).
 - A kódban: `import db from "@/prisma/db";`
 
@@ -937,6 +946,18 @@ DELETE http://localhost:3000/api/filmek/1
 
 ## 14. Hasznos trükkök, buktatók
 
+- **A mentés után nem frissül az API (a hot reload "befagy"):** ellenőrizd sorban:
+  1. **Contract változás után az új mezők/modellek nem látszanak:** a `prisma/db.ts` a régi klienst tartja meg. Az 5. pontban lévő változat a contract változásakor új klienst készít; régebbi `db.ts` esetén indítsd újra a fejlesztői szervert.
+  2. **Debug módban vagy?** Ha a futás egy törésponton áll (Debug server-side), a szerver nem válaszol és nem fordít újra, amíg nem folytatod (F5).
+  3. **Windows Defender:** a valós idejű víruskeresés minden fájlolvasást ellenőriz, ami nagyon lelassíthatja az újrafordítást (a Next.js dokumentációja is jelzi). A projekt mappáját (vagy legalább a `.next` mappát) érdemes kivételként felvenni: **Windows Biztonság → Vírus- és veszélyvédelem → Beállítások kezelése → Kizárások**.
+  4. **Sérült Turbopack gyorsítótár:** a Next.js 16 a fejlesztői fordítás eredményét a `.next/dev/cache/turbopack` mappába menti. Ha ez összeakad, a fejlesztői szerver leállítása után töröld a `.next` mappát, majd indítsd újra (`npm run dev`). Ha gyakran előfordul, a gyorsítótár kikapcsolható a `next.config.ts`-ben (ára: lassabb első indulás):
+     ```ts
+     const nextConfig: NextConfig = {
+       experimental: {
+         turbopackFileSystemCacheForDev: false,
+       },
+     };
+     ```
 - **`'prisma' is not recognized as an internal or external command`:** a Prisma CLI a projekt fejlesztői függősége, ezért `npx prisma ...` alakban (vagy `npm run ...` scripttel) kell futtatni.
 - **Nincs IntelliSense és formázás a `contract.prisma`-ban:** a VS Code Prisma bővítménye a projekt `node_modules/prisma` mappájából indítja a Prisma 8 nyelvi szervert. Ellenőrizd, hogy le van-e futtatva az `npm install`, és hogy a contract első sora `// use prisma-8`, majd a VS Code-ban: **Ctrl+Shift+P → Developer: Reload Window**.
 - **`CLI.CONFIG_UNREADABLE ... config loading resolved E:/... instead of e:\...`:** a parancssor (`cmd`) kisbetűs meghajtójellel áll a mappában. Futtasd a parancsot PowerShellből (2.1 pont), vagy lépj be újra nagybetűvel: `cd /d E:\...`.

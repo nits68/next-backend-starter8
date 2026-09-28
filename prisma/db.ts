@@ -4,10 +4,18 @@ import type { Contract } from "./contract.d";
 import contractJson from "./contract.json" with { type: "json" };
 
 const createDb = () => postgres<Contract>({ contractJson, url: process.env["DATABASE_URL"]! });
+type Db = ReturnType<typeof createDb>;
 
-// egyetlen kliens példány a Next.js hot reload miatt
-const globalForDb = globalThis as unknown as { db?: ReturnType<typeof createDb> };
-export const db = globalForDb.db ?? createDb();
-if (process.env.NODE_ENV !== "production") globalForDb.db = db;
+// Egyetlen kliens példány a Next.js hot reload miatt. Ha a contract megváltozik
+// (prisma contract emit), új kliens készül, a régi kapcsolatai lezárulnak.
+const globalForDb = globalThis as unknown as { db?: Db; dbContractHash?: string };
+const contractHash = contractJson.storage.storageHash;
 
+if (!globalForDb.db || globalForDb.dbContractHash !== contractHash) {
+  void globalForDb.db?.close();
+  globalForDb.db = createDb();
+  globalForDb.dbContractHash = contractHash;
+}
+
+export const db = globalForDb.db;
 export default db;
