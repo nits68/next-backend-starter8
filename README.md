@@ -6,8 +6,8 @@
 
 Két környezetre készül:
 
-- **Vizsga:** helyi, localhost-ra telepített PostgreSQL szerver (lásd 6.1, 6.2)
-- **Órai munka, házi feladat:** [Neon](https://neon.com) ingyenes felhős PostgreSQL (lásd 6.3)
+- **Vizsga:** helyi, localhost-ra telepített PostgreSQL szerver (lásd 6.1, vagy 6.2)
+- **Órai munka, projekt:** [Neon](https://neon.com) ingyenes felhős PostgreSQL (lásd 6.3)
 
 A kód mindkét esetben ugyanaz, csak a `.env` állományban lévő connection string különbözik.
 
@@ -22,33 +22,15 @@ A kód mindkét esetben ugyanaz, csak a `.env` állományban lévő connection s
 > - `"type": "module"` a `package.json`-ban (az `orm init` beállítja)
 > - Windowson a telepítést és a Prisma parancsokat **PowerShell** terminálból futtasd (lásd 2.1)
 
-## 0. Mi változott a Prisma 7-hez képest?
+## Mi változott a Prisma 7-hez képest?
 
 A Prisma 8 egy teljesen újraírt, tisztán TypeScript alapú ORM. A séma helyett **contract** van, a generált kliens helyett a contractból **emitált** fájlokat használjuk, és új, láncolt lekérdező API-t kapunk.
-
-| Prisma 7                                                   | Prisma 8                                                                                 |
-| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `prisma` + `@prisma/client` + `@prisma/adapter-pg` + `pg`  | `prisma` (CLI) + `@prisma/orm-postgres` (könyvtár, a `pg` drivert is hozza)              |
-| `npx prisma init`                                          | `npx prisma@latest orm init --target postgres`                                           |
-| `prisma/schema.prisma`                                     | `prisma/contract.prisma`, első sora kötelezően: `// use prisma-8`                        |
-| `generator` és `datasource` blokk                          | nincs, a kapcsolat a `prisma.config.ts`-ben van                                          |
-| `prisma generate` (→ `lib/generated/prisma`)               | `prisma contract emit` (→ `prisma/contract.json` + `prisma/contract.d.ts`)               |
-| `prisma migrate dev --name x`                              | `prisma migration plan --name x` + `prisma db migrate --advance-ref db`                  |
-| `prisma db push`                                           | `prisma db init` (üres adatbázisra), `prisma db update`                                  |
-| `prisma db pull`                                           | `prisma contract infer`                                                                  |
-| `prisma migrate deploy`                                    | `prisma db migrate`                                                                      |
-| shadow adatbázis kell a migrációhoz                        | nem kell, a `migration plan` az adatbázishoz sem csatlakozik                             |
-| `@db.VarChar(200)`, `@db.SmallInt`                         | a típus helyén: `VarChar(200)`, `SmallInt`                                               |
-| `DateTime @default(now())`, `DateTime @updatedAt`          | `TimestamptzJsDate @default(now())`, `temporal.updatedAtJsDate()` (JavaScript `Date`)    |
-| `prisma.film.findMany()`                                   | `db.orm.public.Film.all()`                                                               |
-| hibakód: `P2002`, `P2025`                                  | PostgreSQL `sqlState`: `23505`; nem létező rekordnál az `update`/`delete` `null`-t ad     |
-| `prisma studio`                                            | nincs a Prisma 8 CLI-ben, a Prisma 7-esből indítható (lásd 13. pont)                     |
 
 **Miért jövőbiztos?** A Prisma 8 a Prisma fejlesztésének iránya. A Prisma 7 a Prisma 8 végleges kiadása után még 18 hónapig kap javításokat, utána nem. A contract egyetlen, jól olvasható fájl, a migrációk TypeScript fájlok, amelyeket el is lehet olvasni és szerkeszteni.
 
 ## 1. Projekt inicializálása a create-next-app sablonnal
 
-Kérdések nélkül, minden beállítással együtt:
+Kérdések nélkül, beállítással kapcsolókkal:
 
 > npx create-next-app@latest next-backend-starter8 --api --ts --eslint --app --no-tailwind --no-src-dir --no-react-compiler --no-agents-md --import-alias "@/\*" --use-npm<br>
 > cd next-backend-starter8<br>
@@ -68,7 +50,7 @@ A kapcsolók:
 | `--import-alias "@/*"`    | az `@/` előtag a projekt gyökerére mutat (pl. `@/prisma/db`)                       |
 | `--use-npm`               | npm csomagkezelő                                                                   |
 
-A Next.js 16-ban a Turbopack az alapértelmezés, erre már nincs kérdés. Az `--api` sablon ESLint konfigurációs fájlt nem hoz létre, azt a 4. pontban pótoljuk.
+Az `--api` sablon ESLint konfigurációs fájlt nem hoz létre, azt a 4. pontban pótoljuk.
 
 ## 2. További külső csomagok telepítése, Prisma inicializálása
 
@@ -502,7 +484,7 @@ A jelszóban lévő speciális karaktereket (`@`, `:`, `/`, `#`, `%` stb.) URL-k
 
 ### 6.2 Helyi PostgreSQL telepítés nélkül (PostgreSQL zip binárisok)
 
-Hordozható, "igazi" PostgreSQL szerver, Windows-szolgáltatás nélkül: a szerver csak akkor fut, amikor elindítod, és rendszergazdai jog sem kell hozzá. Ugyanúgy működik, mint a MongoDB-s változatban a `startMongoDB.bat` + `c:\data\db`.
+Hordozható, "igazi" PostgreSQL szerver, Windows-szolgáltatás nélkül: a szerver csak akkor fut, amikor elindítod, és rendszergazdai jog sem kell hozzá.
 
 **Letöltés:**
 
@@ -552,7 +534,7 @@ A `.env` ugyanaz, mint a 6.1.2 pontban (port `5432`).
 
 Ha ugyanazon a gépen a telepített (6.1) PostgreSQL szolgáltatás is fut, a kettő ütközik az 5432-es porton. Ilyenkor a szolgáltatást állítsd le, vagy a zip-es szervert más porton indítsd: `pg_ctl ... -o "-p 5433" start` (és a `.env`-ben is `5433` legyen).
 
-### 6.3 Neon (órai munka, házi feladat)
+### 6.3 Neon (órai munka, projekt feladat)
 
 1. Regisztráció a [neon.com](https://neon.com) oldalon (GitHub vagy Google fiókkal is lehet), majd új projekt létrehozása (régió: pl. `AWS Europe Central (Frankfurt)`). A Neon a `neondb` adatbázist automatikusan létrehozza.
 2. A projekt **Dashboard** oldalán a **Connect** gombbal nyílik meg a connection string. A **Connection pooling** kapcsolóval a pooled (a hosztnévben `-pooler` szerepel) és a direkt változat között lehet váltani.
