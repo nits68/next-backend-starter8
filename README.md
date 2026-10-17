@@ -12,7 +12,7 @@ Két környezetre készül:
 A kód mindkét esetben ugyanaz, csak a `.env` állományban lévő connection string különbözik.
 
 > [!IMPORTANT]
-> **A Prisma 8 jelenleg release candidate.** 2026 szeptemberében `prisma@8.0.0-rc.17` (parancssori eszköz) és `@prisma/orm-postgres@8.0.0-rc.12` (könyvtár), a végleges kiadás 2026 októberére várható. A PostgreSQL-támogatás a legérettebb része, de a végleges kiadásig az API kis mértékben még változhat.
+> **A Prisma 8 jelenleg release candidate.** 2026 szeptemberében `prisma@8.0.0-rc.23` (parancssori eszköz) és `@prisma/orm-postgres@8.0.0-rc.18` (könyvtár), a végleges kiadás 2026 októberére várható. A PostgreSQL-támogatás a legérettebb része, de a végleges kiadásig az API kis mértékben még változhat.
 >
 > Követelmények:
 >
@@ -109,7 +109,7 @@ Az npm 11 minden telepítésnél figyelmeztet azokra a csomagokra, amelyek telep
 npm warn allow-scripts 3 packages have install scripts not yet covered by allowScripts:
 npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
 npm warn allow-scripts   unrs-resolver@1.12.2 (postinstall: node postinstall.js)
-npm warn allow-scripts   workerd@1.20260901.1 (postinstall: node install.js)
+npm warn allow-scripts   workerd@1.20261002.1 (postinstall: node install.js)
 ```
 
 A 2.2 pont utolsó parancsa (`npm install-scripts deny esbuild unrs-resolver workerd`) erről dönt: letiltja a scriptek futtatását, és a döntést a `package.json`-ba írja, így a figyelmeztetés többet nem jelenik meg:
@@ -126,17 +126,9 @@ Egyik script sem kell a működéshez: az `esbuild` (ezt a `tsx` használja) és
 
 ### 2.4 További telepítési figyelmeztetések (ERESOLVE, vulnerabilities)
 
-**`npm warn ERESOLVE overriding peer dependency ... @effect/vitest ... effect`:** a Prisma CLI felhős telepítő részének (Prisma Composer) belső függőségei között van egy verzióütközés (az `alchemy` újabb `@effect/vitest`-et kér, mint amilyen `effect` verziót a Composer rögzít). Az npm feloldja, ezért csak figyelmeztetés. A `package.json`-ban egy `overrides` bejegyzés a Composer verziójához igazítja, így a figyelmeztetés eltűnik:
+**`npm warn ERESOLVE overriding peer dependency ... @effect/vitest ... effect`:** a Prisma CLI korábbi verzióinál a felhős telepítő rész (Prisma Composer) belső függőségei között volt egy verzióütközés (az `alchemy` újabb `@effect/vitest`-et kért, mint amilyen `effect` verziót a Composer rögzített). Az npm feloldotta, ezért csak figyelmeztetés volt, és egy `overrides` bejegyzés a `package.json`-ban eltüntette. A `prisma@8.0.0-rc.23` már nem okozza, ezért a bejegyzés törölve lett. Ha egy későbbi verziónál mégis előjönne a figyelmeztetés, az `"overrides": { "@effect/vitest": "<a Composer által kért verzió>" }` bejegyzéssel ismét elnémítható.
 
-```json
-"overrides": {
-  "@effect/vitest": "4.0.0-rc.115"
-}
-```
-
-(A Prisma CLI újabb verziójánál a bejegyzés feleslegessé válhat: ha a figyelmeztetés nélküle sem jelenik meg, törölhető.)
-
-**`13 vulnerabilities (5 moderate, 8 high)`:** mind a 13 a `prisma` parancssori eszköz saját függőségeiből jön (Prisma Composer: `alchemy`, `@prisma/composer`, `@prisma/dev`, `hono`; sémaelemző: `chevrotain`, `lodash`), amelyet csak fejlesztés közben, a saját gépen használunk. A futó alkalmazás függőségeiben (`next`, `@prisma/orm-postgres`, `dotenv`) nincs sérülékenység, ez így ellenőrizhető:
+**`18 vulnerabilities (5 moderate, 13 high)`:** mind a 18 fejlesztői eszközök függőségeiből jön, amelyeket csak fejlesztés közben, a saját gépen használunk: a `prisma` parancssori eszközéből (Prisma Composer: `alchemy`, `@prisma/composer`, `@prisma/dev`, `hono`; sémaelemző: `chevrotain`, `lodash`, `valibot`) és az `eslint-config-next`-ből (`@next/eslint-plugin-next`, `fast-glob`, `micromatch`, `braces`). A futó alkalmazás függőségeiben (`next`, `@prisma/orm-postgres`, `dotenv`) nincs sérülékenység, ez így ellenőrizhető:
 
 ```powershell
 npm audit --omit=dev
@@ -390,6 +382,7 @@ A `package.json` scriptjei:
   "db:verify": "prisma db verify",
   "db:sign": "prisma db sign",
   "db:seed": "tsx prisma/seed.ts",
+  "db:setup": "prisma contract emit && prisma db init && tsx prisma/seed.ts",
   "migration:plan": "prisma migration plan",
   "migration:status": "prisma migration status",
   "migrate": "prisma db migrate --advance-ref db"
@@ -663,6 +656,12 @@ majd (a szerver fusson, és az adatbázis létezzen, lásd 6. pont):
 > npx prisma db init<br>
 
 A `db init` üres adatbázison létrehozza a táblákat, majd "aláírja" az adatbázist: egy jelölőt (marker) ír bele, amelyből a Prisma tudja, melyik contract-verziónak felel meg. Emellett létrehozza a `migrations/app/refs/db.json` hivatkozást és a `migrations/snapshots` mappát, ezeket commitolni kell.
+
+**Egy paranccsal:** üres (de már létező) adatbázison a három lépés (`contract emit`, `db init`, `seed`) együtt is futtatható:
+
+> npm run db:setup<br>
+
+Ez csak az első feltöltéshez való: ha az adatbázist a `db init` már aláírta, újabb futtatásnál a `db init` nem fog tudni újra inicializálni. Ilyenkor csak a `npm run db:seed` kell (az törli és újratölti a táblák tartalmát), séma-változásnál pedig a `db:update` vagy a migrációk (9. pont).
 
 ## 8. A contract a meglévő adatbázistáblákból is létrehozható
 

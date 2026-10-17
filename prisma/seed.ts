@@ -3,7 +3,7 @@
 import { db } from "./db";
 
 // Minta filmek (a title egyedi, @unique)
-const filmek = [
+const FILMS = [
   { title: "Körhinta", content: "dráma" },
   { title: "Egri csillagok", content: "történelmi" },
   { title: "A Pál utcai fiúk", content: "ifjúsági" },
@@ -25,7 +25,7 @@ const filmek = [
 ];
 
 // Minta felhasználók (az email egyedi, @unique)
-const felhasznalok = [
+const USERS = [
   { email: "kiss.anna@pelda.hu", username: "kanna", name: "Kiss Anna" },
   { email: "nagy.peter@pelda.hu", username: "npeter", name: "Nagy Péter" },
   { email: "szabo.eszter@pelda.hu", username: "szeszter", name: "Szabó Eszter" },
@@ -44,7 +44,7 @@ const felhasznalok = [
 ];
 
 // Minta bejegyzések: a szerzőt a felhasználó emailjével adjuk meg
-const bejegyzesek = [
+const POSTS = [
   { szerzo: "kiss.anna@pelda.hu", title: "Kedvenc magyar filmem", content: "A Körhinta minden alkalommal megríkat." },
   { szerzo: "kiss.anna@pelda.hu", title: "Filmklub csütörtökön", content: "A tanú lesz a következő film." },
   { szerzo: "kiss.anna@pelda.hu", title: "Klasszikusok hétvégére", content: null },
@@ -73,14 +73,14 @@ async function main() {
   await db.orm.public.User.where({}).deleteAll();
   await db.orm.public.Film.where({}).deleteAll();
 
-  await db.orm.public.Film.createAll(filmek);
+  await db.orm.public.Film.createAll(FILMS);
 
   // A createAll a létrehozott rekordokat adja vissza, így megkapjuk a felhasználók id-jét
-  const users = await db.orm.public.User.createAll(felhasznalok);
+  const users = await db.orm.public.User.createAll(USERS);
   const idByEmail = new Map(users.map((u) => [u.email, u.id]));
 
   await db.orm.public.Post.createAll(
-    bejegyzesek.map((e) => ({
+    POSTS.map((e) => ({
       title: e.title,
       content: e.content,
       authorId: idByEmail.get(e.szerzo)!,
@@ -88,7 +88,7 @@ async function main() {
   );
 
   console.log(
-    `Feltöltve: ${filmek.length} film, ${users.length} felhasználó, ${bejegyzesek.length} bejegyzés`,
+    `Feltöltve: ${FILMS.length} film, ${users.length} felhasználó, ${POSTS.length} bejegyzés`,
   );
   await db.close();
 }

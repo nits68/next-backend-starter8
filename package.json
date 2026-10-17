@@ -14,33 +14,31 @@
     "db:verify": "prisma db verify",
     "db:sign": "prisma db sign",
     "db:seed": "tsx prisma/seed.ts",
+    "db:setup": "prisma contract emit && prisma db init && tsx prisma/seed.ts",
     "migration:plan": "prisma migration plan",
     "migration:status": "prisma migration status",
     "migrate": "prisma db migrate --advance-ref db"
   },
   "dependencies": {
-    "@prisma/orm-postgres": "^8.0.0-rc.15",
-    "dotenv": "^18.0.6",
-    "next": "16.4.0"
+    "@prisma/orm-postgres": "^8.0.0-rc.18",
+    "dotenv": "^18.0.8",
+    "next": "16.4.2"
   },
   "devDependencies": {
-    "@prisma/cli-engine": "^0.6.3",
+    "@prisma/cli-engine": "^0.9.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.4.0",
-    "prettier": "^3.9.9",
-    "prisma": "^8.0.0-rc.21",
+    "eslint-config-next": "16.4.2",
+    "prettier": "^3.9.10",
+    "prisma": "^8.0.0-rc.23",
     "tsx": "^4.23.15",
     "typescript": "^5",
-    "typescript-eslint": "^8.70.1"
+    "typescript-eslint": "^8.71.2"
   },
   "allowScripts": {
     "esbuild": false,
     "unrs-resolver": false,
     "workerd": false
-  },
-  "overrides": {
-    "@effect/vitest": "4.0.0-rc.115"
   }
 }
