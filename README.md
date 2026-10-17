@@ -655,13 +655,13 @@ majd (a szerver fusson, és az adatbázis létezzen, lásd 6. pont):
 > npx prisma contract emit<br>
 > npx prisma db init<br>
 
-A `db init` üres adatbázison létrehozza a táblákat, majd "aláírja" az adatbázist: egy jelölőt (marker) ír bele, amelyből a Prisma tudja, melyik contract-verziónak felel meg. Emellett létrehozza a `migrations/app/refs/db.json` hivatkozást és a `migrations/snapshots` mappát, ezeket commitolni kell.
+A `db init` új adatbázison létrehozza a hiányzó táblákat (csak hozzáad, nem töröl), majd "aláírja" az adatbázist: egy jelölőt (marker) ír bele, amelyből a Prisma tudja, melyik contract-verziónak felel meg. Emellett létrehozza a `migrations/app/refs/db.json` hivatkozást és a `migrations/snapshots` mappát, ezeket commitolni kell.
 
 **Egy paranccsal:** üres (de már létező) adatbázison a három lépés (`contract emit`, `db init`, `seed`) együtt is futtatható:
 
 > npm run db:setup<br>
 
-Ez csak az első feltöltéshez való: ha az adatbázist a `db init` már aláírta, újabb futtatásnál a `db init` nem fog tudni újra inicializálni. Ilyenkor csak a `npm run db:seed` kell (az törli és újratölti a táblák tartalmát), séma-változásnál pedig a `db:update` vagy a migrációk (9. pont).
+Az első feltöltéshez való. A `db init` csak hozzáad, a már meglévő, kompatibilis táblákat békén hagyja, így újrafuttatni nem káros, de a seed minden futáskor törli és újratölti a táblák tartalmát. Ha csak az adatok kellenek újra, elég a `npm run db:seed`, séma-változásnál pedig a `db:update` vagy a migrációk (9. pont).
 
 ## 8. A contract a meglévő adatbázistáblákból is létrehozható
 
@@ -726,6 +726,54 @@ Ez a három parancs a leggyakoribb, és könnyű összekeverni őket. Röviden: 
 | `prisma contract emit` | a `contract.prisma`-ból elkészíti a `contract.json` és `contract.d.ts` fájlt (a kód és a TypeScript ezeket használja) | nem                   | nem                                       |
 | `prisma db update`     | összeveti az adatbázist a contracttal, a különbséget végrehajtja (tábla, oszlop, index létrehozása, törlése), majd aláírja | igen                  | **igen** (adatvesztés előtt megerősítést kér) |
 | `prisma db sign`       | ellenőrzi, hogy az adatbázis megfelel-e a contractnak; ha igen, aláírja (a jelölőt frissíti)             | igen                  | nem (csak a jelölőt írja)                 |
+
+### Az összes parancs röviden
+
+Négy fogalom kell hozzájuk:
+
+- **contract:** az adatmodell leírása (`prisma/contract.prisma`). Ez az igazság forrása: a modellek, mezők, típusok, kapcsolatok.
+- **aláírás (marker):** egy jelölő az **adatbázisban**, amely rögzíti, melyik contract-verziónak felel meg az adatbázis. Futáskor a Prisma ebből tudja, hogy a kód és az adatbázis összeillik.
+- **migráció:** egy mentett, commitolható lépés (`migrations/app` mappa), amely leírja, hogyan jut el az adatbázis a contract egyik változatáról a következőre.
+- **`db` hivatkozás (ref):** a `migrations/app/refs/db.json` fájl. Azt jegyzi, hogy a fejlesztői adatbázis a contract melyik változatánál tart, a következő `migration plan` innen indul.
+
+| Parancs | Röviden | Csatlakozik az adatbázishoz? | Módosítja az adatbázist? |
+| ------- | ------- | ---------------------------- | ------------------------ |
+| `npx prisma contract infer --output ./prisma/contract.prisma` | a meglévő adatbázisból contract-fájlt készít | igen | nem (a `contract.prisma`-t írja felül) |
+| `npx prisma contract emit` | a contractból elkészíti a kód által használt fájlokat | nem | nem |
+| `npx prisma db init` | új adatbázison létrehozza a hiányzó táblákat, és aláírja | igen | igen (csak hozzáad) |
+| `npx prisma db update` | az adatbázist a contracthoz igazítja, migrációs fájl nélkül | igen | igen (törölhet is) |
+| `npx prisma db verify` | ellenőrzi, hogy az adatbázis megfelel-e a contractnak | igen | nem |
+| `npx prisma db sign` | ellenőrzi, majd aláírja az adatbázist (a táblákhoz nem nyúl) | igen | csak az aláírást írja |
+| `npx prisma migration plan` | a contract változásából migrációt készít | nem | nem (csak fájlokat ír) |
+| `npx prisma migration status` | megmutatja, mely migrációk várnak még végrehajtásra | igen | nem |
+| `npx prisma db migrate --advance-ref db` | végrehajtja a várakozó migrációkat, és előreléptet a `db` hivatkozást | igen | igen |
+
+**`npx prisma contract infer --output ./prisma/contract.prisma`**
+Beolvassa a **meglévő adatbázis** tényleges sémáját, és abból elkészíti a `contract.prisma` fájlt, vagyis fordított irányban dolgozik, mint a többi parancs: nem a contract alapján alakítja az adatbázist, hanem az adatbázis alapján írja meg a contractot. Akkor kell, ha már létező táblákkal kezdesz (pl. egy korábbi projektből). Az `--output` a kimeneti fájl útvonala; ha a fájl már létezik, a parancs figyelmeztetéssel **felülírja**, ezért előbb mentsd vagy commitold a saját contractodat. A parancs itt megáll: a kapott fájlt át kell nézni (típusok, modellnevek, lásd 8. pont), majd külön lépésként jön a `contract emit` és a `db sign`. Az adatbázist nem módosítja.
+
+**`npx prisma contract emit`**
+Beolvassa a `contract.prisma` fájlt, és két fájlt ír a `prisma` mappába: a `contract.json`-t (a contract géppel olvasható változata, ezt használja a futó kód és a többi parancs) és a `contract.d.ts`-t (a TypeScript típusai, ezért kapsz automatikus kiegészítést a `db.orm...` hívásoknál). Az adatbázist nem érinti, ezért bármikor biztonságosan futtatható. Minden contract-módosítás után ezzel kezdj, mert a többi parancs a `contract.prisma`-t nem olvassa, csak az emitált fájlt.
+
+**`npx prisma db init`**
+Új adatbázis előkészítése. Mindazt létrehozza, amit a contract leír, de az adatbázisban még nincs (táblák, oszlopok, indexek), majd aláírja az adatbázist. Csak hozzáad, soha nem töröl: ha egy tábla már létezik és kompatibilis, békén hagyja; ha ütközést talál, amelyet csak törléssel lehetne feloldani, leáll. Létrehozza a `migrations/app/refs/db.json` hivatkozást és a `migrations/snapshots` mappát is. Előtte megnézheted, mit tenne: `npx prisma db init --dry-run`.
+
+**`npx prisma db update`**
+Összeveti az adatbázist a contracttal, és végrehajtja a különbséget: új tábla, oszlop, index létrehozását, de törlését is. Migrációs fájlt nem készít, ezért fejlesztés közben a leggyorsabb, közös adatbázison viszont nem hagy nyomot. Ha egy művelet adatot veszítene (pl. oszlop törlése), nem fut le, amíg meg nem mondod, mit jelent: `--rename régi:új` (az adat megmarad az új néven) vagy `--delete` (az adat elvész). Előtte: `npx prisma db update --dry-run`.
+
+**`npx prisma db verify`**
+Csak olvas. Először az aláírást nézi meg, aztán azt, hogy a tényleges séma teljesíti-e a contractot. Eltérésnél hibakóddal tér vissza (4 = eltérés, 2 = nem tudott lefutni, pl. nincs kapcsolat). Hasznos kapcsolók: `--marker-only` (csak az aláírás), `--schema-only` (csak a séma), `--strict` (az is hiba, ha az adatbázisban több van, mint a contractban).
+
+**`npx prisma db sign`**
+Ellenőrzi, hogy az adatbázis sémája megfelel a contractnak, és ha igen, aláírja. A táblákat nem változtatja, és újra futtatva sem árt (ismételhető). Akkor kell, ha az adatbázis már jó, csak a Prisma nem tud róla: meglévő adatbázis átvételekor vagy kézi SQL-módosítás után. Ha az adatbázisból hiányzik valami, hibát ad, nem ír alá. Aláíráskor a `db` hivatkozást is előreviszi; `--no-advance-ref` kapcsolóval ez kihagyható.
+
+**`npx prisma migration plan`**
+Összeveti az emitált contractot a legutóbbi migráció állapotával, és a különbségből új migrációt ír a `migrations/app` mappába (`--name valtozas_neve`: a mappa neve). Nem csatlakozik az adatbázishoz, és nem hajt végre semmit, csak elkészíti a lépést, amit utána átnézhetsz és commitolhatsz. Üres `migrations` mappánál először egy `baseline` migrációt készít a `db` hivatkozás állapotából. Adatvesztő változásnál megkérdezi, mit jelent (`--rename`, `--delete`); típusváltozásnál vagy új kötelező mezőnél a `--convert` és a `--backfill` kapcsolóval a migrációba kód írható az adatok átalakításához.
+
+**`npx prisma migration status`**
+Megmutatja, hogy az adatbázis aláírása és a célként megadott contract között mely migrációk várnak még végrehajtásra, vagyis hol tart az adatbázis. Csak olvas.
+
+**`npx prisma db migrate --advance-ref db`**
+A várakozó migrációkat sorrendben végrehajtja az adatbázison. A már lemezen lévő migrációkat játssza vissza, magától nem talál ki újat. Siker után az `--advance-ref db` a `db` hivatkozást az új állapotra állítja, így a következő `migration plan` onnan indul. Más adatbázison (pl. Neonon) a migrációkat **`--advance-ref` nélkül** alkalmazd, mert az a `db` hivatkozás a fejlesztői adatbázishoz tartozik. Előtte megnézheted az útvonalat: `npx prisma db migrate --show`.
 
 ### prisma contract emit
 
