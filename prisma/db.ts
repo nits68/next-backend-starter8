@@ -1,9 +1,12 @@
 import "dotenv/config";
 import postgres from "@prisma/orm-postgres/runtime";
+import { contractFromJson } from "@prisma/orm-postgres/static";
 import type { Contract } from "./contract.d";
 import contractJson from "./contract.json" with { type: "json" };
 
-const createDb = () => postgres<Contract>({ contractJson, url: process.env["DATABASE_URL"]! });
+const contract = contractFromJson<Contract>(contractJson);
+
+const createDb = () => postgres({ contract, url: process.env["DATABASE_URL"]! });
 type Db = ReturnType<typeof createDb>;
 
 // Egyetlen kliens példány a Next.js hot reload miatt. Ha a contract megváltozik

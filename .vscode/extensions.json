@@ -7,7 +7,6 @@
         "ms-ossdata.vscode-pgsql",
         "usernamehw.errorlens",
         "abdulowhab.json-to-ts-type",
-        "yoavbls.pretty-ts-errors",
-        "humao.rest-client"
+        "yoavbls.pretty-ts-errors"
     ]
 }

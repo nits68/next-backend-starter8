@@ -12,14 +12,14 @@ Két környezetre készül:
 A kód mindkét esetben ugyanaz, csak a `.env` állományban lévő connection string különbözik.
 
 > [!IMPORTANT]
-> **A Prisma 8 jelenleg release candidate.** 2026 szeptemberében `prisma@8.0.0-rc.23` (parancssori eszköz) és `@prisma/orm-postgres@8.0.0-rc.18` (könyvtár), a végleges kiadás 2026 októberére várható. A PostgreSQL-támogatás a legérettebb része, de a végleges kiadásig az API kis mértékben még változhat.
+> **A Prisma 8 jelenleg release candidate.** 2026 októberében `prisma@8.0.0-rc.27` (parancssori eszköz) és `@prisma/orm-postgres@8.0.0-rc.20` (könyvtár), a végleges kiadás hamarosan várható. A PostgreSQL-támogatás a legérettebb része, de a végleges kiadásig az API kis mértékben még változhat.
 >
 > Követelmények:
 >
 > - **Node.js 22.18+** (a 24-es ágon **24.11+**, a 24.0–24.10 nem jó), ajánlott a Node.js 24
 > - **TypeScript 5.9+** (a `create-next-app` jelenleg 5.9.x-et telepít)
 > - **PostgreSQL 15+** (a 18.x ajánlott)
-> - `"type": "module"` a `package.json`-ban (az `orm init` beállítja)
+> - `"type": "module"` a `package.json`-ban (az `orm init` korábban beállította, az rc.27-es már nem, ezért kézzel add hozzá)
 > - Windowson a telepítést és a Prisma parancsokat **PowerShell** terminálból futtasd (lásd 2.1)
 
 ## Mi változott a Prisma 7-hez képest?
@@ -88,7 +88,7 @@ Az `orm init` a következőket végzi el:
 
 - telepíti a `@prisma/orm-postgres` és a `dotenv` csomagokat, fejlesztői függőségként a `prisma` és a `@prisma/cli-engine` csomagokat
 - létrehozza a `prisma.config.ts`, a `prisma/contract.prisma` (minta `User` és `Post` modellel), a `prisma/db.ts` és a `prisma-8.md` (rövid Prisma 8 összefoglaló) állományokat
-- a `package.json`-ba felveszi a `"type": "module"` beállítást és a `contract:emit` scriptet
+- a `package.json`-ba felveszi a `contract:emit` scriptet (a `"type": "module"` beállítást az rc.27 már nem írja be, add hozzá kézzel)
 - a `tsconfig.json`-ban beállítja a `"module": "preserve"` és a `"types": ["node"]` opciókat (a Next.js-nek ez megfelel)
 - kiegészíti a `.gitignore`-t, létrehozza a `.gitattributes`-t (a generált fájlok jelölésére)
 - a contractból legenerálja a `prisma/contract.json` és a `prisma/contract.d.ts` állományokat
@@ -126,9 +126,9 @@ Egyik script sem kell a működéshez: az `esbuild` (ezt a `tsx` használja) és
 
 ### 2.4 További telepítési figyelmeztetések (ERESOLVE, vulnerabilities)
 
-**`npm warn ERESOLVE overriding peer dependency ... @effect/vitest ... effect`:** a Prisma CLI korábbi verzióinál a felhős telepítő rész (Prisma Composer) belső függőségei között volt egy verzióütközés (az `alchemy` újabb `@effect/vitest`-et kért, mint amilyen `effect` verziót a Composer rögzített). Az npm feloldotta, ezért csak figyelmeztetés volt, és egy `overrides` bejegyzés a `package.json`-ban eltüntette. A `prisma@8.0.0-rc.23` már nem okozza, ezért a bejegyzés törölve lett. Ha egy későbbi verziónál mégis előjönne a figyelmeztetés, az `"overrides": { "@effect/vitest": "<a Composer által kért verzió>" }` bejegyzéssel ismét elnémítható.
+**`npm warn ERESOLVE overriding peer dependency ... @effect/vitest ... effect`:** a Prisma CLI korábbi verzióinál a felhős telepítő rész (Prisma Composer) belső függőségei között volt egy verzióütközés (az `alchemy` újabb `@effect/vitest`-et kért, mint amilyen `effect` verziót a Composer rögzített). Az npm feloldotta, ezért csak figyelmeztetés volt, és egy `overrides` bejegyzés a `package.json`-ban eltüntette. A `prisma@8.0.0-rc.27` már nem okozza, ezért a bejegyzés törölve lett. Ha egy későbbi verziónál mégis előjönne a figyelmeztetés, az `"overrides": { "@effect/vitest": "<a Composer által kért verzió>" }` bejegyzéssel ismét elnémítható.
 
-**`18 vulnerabilities (5 moderate, 13 high)`:** mind a 18 fejlesztői eszközök függőségeiből jön, amelyeket csak fejlesztés közben, a saját gépen használunk: a `prisma` parancssori eszközéből (Prisma Composer: `alchemy`, `@prisma/composer`, `@prisma/dev`, `hono`; sémaelemző: `chevrotain`, `lodash`, `valibot`) és az `eslint-config-next`-ből (`@next/eslint-plugin-next`, `fast-glob`, `micromatch`, `braces`). A futó alkalmazás függőségeiben (`next`, `@prisma/orm-postgres`, `dotenv`) nincs sérülékenység, ez így ellenőrizhető:
+**`13 vulnerabilities (5 moderate, 8 high)`:** mind a 13 fejlesztői eszközök függőségeiből jön, amelyeket csak fejlesztés közben, a saját gépen használunk: a `prisma` parancssori eszközéből (Prisma Composer: `alchemy`, `@prisma/composer`, `@prisma/dev`, `hono`; sémaelemző: `chevrotain`, `lodash`, `valibot`) és az `eslint-config-next`-ből (`@next/eslint-plugin-next`, `fast-glob`, `micromatch`, `braces`). A futó alkalmazás függőségeiben (`next`, `@prisma/orm-postgres`, `dotenv`) nincs sérülékenység, ez így ellenőrizhető:
 
 ```powershell
 npm audit --omit=dev
@@ -183,8 +183,7 @@ A `definePrismaConfig` az `orm init` által írt `@prisma/cli-engine` csomagból
         "ms-ossdata.vscode-pgsql",
         "usernamehw.errorlens",
         "abdulowhab.json-to-ts-type",
-        "yoavbls.pretty-ts-errors",
-        "humao.rest-client"
+        "yoavbls.pretty-ts-errors"
     ]
 }
 ```
@@ -411,10 +410,13 @@ Ha már commitoltad őket, a gitből így vehetők ki (a lemezen megmaradnak): `
 ```ts
 import "dotenv/config";
 import postgres from "@prisma/orm-postgres/runtime";
+import { contractFromJson } from "@prisma/orm-postgres/static";
 import type { Contract } from "./contract.d";
 import contractJson from "./contract.json" with { type: "json" };
 
-const createDb = () => postgres<Contract>({ contractJson, url: process.env["DATABASE_URL"]! });
+const contract = contractFromJson<Contract>(contractJson);
+
+const createDb = () => postgres({ contract, url: process.env["DATABASE_URL"]! });
 type Db = ReturnType<typeof createDb>;
 
 // Egyetlen kliens példány a Next.js hot reload miatt. Ha a contract megváltozik
@@ -433,6 +435,7 @@ export default db;
 ```
 
 - **Miért nem elég a kliens egyszerű megtartása?** A hot reload során a `db.ts` újrafut, ezért a klienst a `globalThis`-en tároljuk, különben minden mentés új kapcsolatkészletet nyitna. Ha azonban mindig a régi klienst adnánk vissza, a `contract emit` után is a **régi contracttal** dolgozna: az új modellek, mezők "nem léteznének" (pl. `Cannot read properties of undefined (reading 'all')`), amíg a fejlesztői szervert újra nem indítod. Ezért a kliens a contract hash-ét (`storageHash`) is megjegyzi, és változáskor újat készít.
+- **`contractJson` helyett `contract`:** az `@prisma/orm-postgres` rc.20-tól a `postgres()` nem a nyers `contract.json`-t (`contractJson` opció), hanem a `contractFromJson<Contract>(contractJson)` által előállított contractot várja (`contract` opció). A régi hívás `Object literal may only specify known properties, but 'contractJson' does not exist` típushibát ad (`next build`, `tsc`).
 - A kliens az első lekérdezéskor csatlakozik, a kapcsolatot a `db.close()` zárja le (Next.js-ben erre nincs szükség, csak scripteknél).
 - A kódban: `import db from "@/prisma/db";`
 
@@ -471,15 +474,15 @@ Rendszergazdai parancssorban (cmd) ugyanez: `net start postgresql-x64-18`, illet
 A Prisma 8 az adatbázist nem hozza létre, azt előre el kell készíteni (pgAdminban: **Databases → Create → Database…**, vagy psql-lel):
 
 ```powershell
-psql -h localhost -U postgres -c "CREATE DATABASE filmekdb;"
+psql -h localhost -U postgres -c "CREATE DATABASE mydb;"
 ```
 
-Az adatbázis neve **kisbetűs** legyen: a PostgreSQL az idézőjel nélküli neveket kisbetűsre alakítja (`CREATE DATABASE filmekDB` → `filmekdb`), a connection stringben viszont pontosan egyeznie kell.
+Az adatbázis neve **kisbetűs** legyen: a PostgreSQL az idézőjel nélküli neveket kisbetűsre alakítja (`CREATE DATABASE MyDB` → `mydb`), a connection stringben viszont pontosan egyeznie kell.
 
 .env
 
 ```
-DATABASE_URL="postgresql://postgres:jelszo@localhost:5432/filmekdb"
+DATABASE_URL="postgresql://postgres:jelszo@localhost:5432/mydb"
 ```
 
 A jelszóban lévő speciális karaktereket (`@`, `:`, `/`, `#`, `%` stb.) URL-kódolni kell (pl. `@` → `%40`).
@@ -526,10 +529,19 @@ pause
 c:\pgsql\bin\pg_ctl.exe -D c:\pgdata stop
 ```
 
-**Az adatbázis létrehozása** (a szerver elindítása után):
+**Az adatbázis létrehozása** (a szerver elindítása után; a `createdb.exe` bekéri a `postgres` felhasználó jelszavát):
+
+./data/createMyDb.bat
+
+```bat
+c:\pgsql\bin\createdb.exe -h localhost -p 5432 -U postgres -E UTF8 mydb
+pause
+```
+
+Ugyanez psql-lel:
 
 ```powershell
-c:\pgsql\bin\psql.exe -h localhost -U postgres -c "CREATE DATABASE filmekdb;"
+c:\pgsql\bin\psql.exe -h localhost -U postgres -c "CREATE DATABASE mydb;"
 ```
 
 A `.env` ugyanaz, mint a 6.1.2 pontban (port `5432`).
@@ -544,7 +556,7 @@ Ha ugyanazon a gépen a telepített (6.1) PostgreSQL szolgáltatás is fut, a ke
 
 ```
 # --- Helyi PostgreSQL (vizsga) ---
-# DATABASE_URL="postgresql://postgres:jelszo@localhost:5432/filmekdb"
+# DATABASE_URL="postgresql://postgres:jelszo@localhost:5432/mydb"
 
 # --- Neon ---
 DATABASE_URL="postgresql://neondb_owner:<JELSZÓ>@<SAJÁT-VÉGPONT>-pooler.c-5.eu-central-1.aws.neon.tech/neondb?sslmode=verify-full&channel_binding=require"
@@ -981,7 +993,7 @@ DELETE http://localhost:3000/api/filmek/1
 - **Prisma Studio:** a Prisma 8 CLI-ben nincs, a Prisma 7-es CLI-ből indítható. A projekt mappáján **kívülről** kell indítani, mert a Prisma 7 nem tudja olvasni a Prisma 8-as `prisma.config.ts`-t:
   ```powershell
   cd ..
-  npx prisma@7 studio --url "postgresql://postgres:jelszo@localhost:5432/filmekdb"
+  npx prisma@7 studio --url "postgresql://postgres:jelszo@localhost:5432/mydb"
   ```
   (böngészőben: `http://localhost:5555`)
 - **pgAdmin 4:** a PostgreSQL telepítővel és a zip csomaggal is érkezik
@@ -989,7 +1001,7 @@ DELETE http://localhost:3000/api/filmek/1
 - **DBeaver Community:** ingyenes, sokféle adatbázist kezel
 - **VS Code PostgreSQL bővítmény** (Microsoft, `ms-ossdata.vscode-pgsql`): táblák böngészése, SQL futtatás a VS Code-ban
 - **Neon Console:** a Neon webes felületén SQL Editor és Tables nézet
-- **psql:** parancssori kliens, pl. `psql -h localhost -U postgres -d filmekdb`
+- **psql:** parancssori kliens, pl. `psql -h localhost -U postgres -d mydb`
 
 ## 14. Hasznos trükkök, buktatók
 
@@ -1013,7 +1025,7 @@ DELETE http://localhost:3000/api/filmek/1
 - **`RUNTIME.TEMPORAL_UNAVAILABLE`:** a contractban `JsDate` nélküli dátumtípus (`DateTime`, `Timestamptz`, `Timestamp`, `temporal.updatedAt()`) szerepel, lásd 7. pont.
 - **`DRIVER.CONNECTION_FAILED`:** nem fut a szerver, hibás a `.env`-ben a connection string, vagy nem létezik az adatbázis (a Prisma 8 nem hozza létre). A `why:` sor mondja meg a pontos okot:
   - `password authentication failed for user '...'`: rossz a jelszó, vagy (Neonon) a hostnévben helyőrző maradt (6.3 pont),
-  - `database "..." does not exist`: nincs létrehozva az adatbázis, vagy kimaradt az URL-ből az adatbázisnév (`/neondb`, `/filmekdb`).
+  - `database "..." does not exist`: nincs létrehozva az adatbázis, vagy kimaradt az URL-ből az adatbázisnév (`/neondb`, `/mydb`).
 - **`CONTRACT.MARKER_READ_FAILED` … `Postgres driver not connected`** (pl. a seed vagy egy végpont futásakor): a program nem kapott connection stringet: üres vagy hiányzik a `.env`, vagy nincs benne `DATABASE_URL`. Ha a `.env` véletlenül kiürült, a VS Code-ban a **Timeline** panelen (vagy **Local History: Find Entry to Restore**) visszaállítható.
 - **`npm error ERESOLVE ... @eslint/js`:** az `@eslint/js` csomagot nem kell külön telepíteni, az ESLint magával hozza (2.2 pont). Ha mégis kell, csak az ESLint-tel egyező fő verzióval: `npm i -D @eslint/js@9`.
 - **`npm warn allow-scripts ...`:** lásd 2.3 pont.

@@ -20,21 +20,21 @@
     "migrate": "prisma db migrate --advance-ref db"
   },
   "dependencies": {
-    "@prisma/orm-postgres": "^8.0.0-rc.18",
-    "dotenv": "^18.0.8",
-    "next": "16.4.2"
+    "@prisma/orm-postgres": "^8.0.0-rc.20",
+    "dotenv": "^18.0.9",
+    "next": "16.4.3"
   },
   "devDependencies": {
     "@prisma/cli-engine": "^0.9.0",
-    "@types/node": "^20",
+    "@types/node": "^24.19.2",
     "@types/react": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.4.2",
+    "eslint-config-next": "16.4.3",
     "prettier": "^3.9.10",
-    "prisma": "^8.0.0-rc.23",
+    "prisma": "^8.0.0-rc.27",
     "tsx": "^4.23.15",
     "typescript": "^5",
-    "typescript-eslint": "^8.71.2"
+    "typescript-eslint": "^8.72.0"
   },
   "allowScripts": {
     "esbuild": false,
