@@ -5,7 +5,7 @@ model Film {
   content   String
   createdAt TimestamptzJsDate          @default(now())
   title     String                     @unique()
-  updatedAt temporal.updatedAtJsDate()
+  updatedAt temporal.UpdatedAtJsDate
 
   @@map("films")
 }
@@ -15,7 +15,7 @@ model User {
   createdAt TimestamptzJsDate          @default(now())
   email     String                     @unique()
   name      String?
-  updatedAt temporal.updatedAtJsDate()
+  updatedAt temporal.UpdatedAtJsDate
   username  String?
   posts     Post[]
 
@@ -28,7 +28,7 @@ model Post {
   content   String?
   createdAt TimestamptzJsDate          @default(now())
   title     String
-  updatedAt temporal.updatedAtJsDate()
+  updatedAt temporal.UpdatedAtJsDate
   author    User                       @relation(fields:[authorId], references:[id], map: "posts_authorId_fkey")
 
   @@index([authorId])

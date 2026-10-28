@@ -12,14 +12,14 @@ Két környezetre készül:
 A kód mindkét esetben ugyanaz, csak a `.env` állományban lévő connection string különbözik.
 
 > [!IMPORTANT]
-> **A Prisma 8 jelenleg release candidate.** 2026 októberében `prisma@8.0.0-rc.27` (parancssori eszköz) és `@prisma/orm-postgres@8.0.0-rc.20` (könyvtár), a végleges kiadás hamarosan várható. A PostgreSQL-támogatás a legérettebb része, de a végleges kiadásig az API kis mértékben még változhat.
+> **A Prisma 8 jelenleg release candidate.** 2026 októberében `prisma@8.0.0-rc.28` (parancssori eszköz) és `@prisma/orm-postgres@8.0.0-rc.20` (könyvtár), a végleges kiadás hamarosan várható. A PostgreSQL-támogatás a legérettebb része, de a végleges kiadásig az API kis mértékben még változhat.
 >
 > Követelmények:
 >
 > - **Node.js 22.18+** (a 24-es ágon **24.11+**, a 24.0–24.10 nem jó), ajánlott a Node.js 24
 > - **TypeScript 5.9+** (a `create-next-app` jelenleg 5.9.x-et telepít)
 > - **PostgreSQL 15+** (a 18.x ajánlott)
-> - `"type": "module"` a `package.json`-ban (az `orm init` korábban beállította, az rc.27-es már nem, ezért kézzel add hozzá)
+> - `"type": "module"` a `package.json`-ban (az `orm init` korábban beállította, az rc.27-es óta már nem, ezért kézzel add hozzá)
 > - Windowson a telepítést és a Prisma parancsokat **PowerShell** terminálból futtasd (lásd 2.1)
 
 ## Mi változott a Prisma 7-hez képest?
@@ -88,7 +88,7 @@ Az `orm init` a következőket végzi el:
 
 - telepíti a `@prisma/orm-postgres` és a `dotenv` csomagokat, fejlesztői függőségként a `prisma` és a `@prisma/cli-engine` csomagokat
 - létrehozza a `prisma.config.ts`, a `prisma/contract.prisma` (minta `User` és `Post` modellel), a `prisma/db.ts` és a `prisma-8.md` (rövid Prisma 8 összefoglaló) állományokat
-- a `package.json`-ba felveszi a `contract:emit` scriptet (a `"type": "module"` beállítást az rc.27 már nem írja be, add hozzá kézzel)
+- a `package.json`-ba felveszi a `contract:emit` scriptet (a `"type": "module"` beállítást az rc.27 óta már nem írja be, add hozzá kézzel)
 - a `tsconfig.json`-ban beállítja a `"module": "preserve"` és a `"types": ["node"]` opciókat (a Next.js-nek ez megfelel)
 - kiegészíti a `.gitignore`-t, létrehozza a `.gitattributes`-t (a generált fájlok jelölésére)
 - a contractból legenerálja a `prisma/contract.json` és a `prisma/contract.d.ts` állományokat
@@ -126,7 +126,7 @@ Egyik script sem kell a működéshez: az `esbuild` (ezt a `tsx` használja) és
 
 ### 2.4 További telepítési figyelmeztetések (ERESOLVE, vulnerabilities)
 
-**`npm warn ERESOLVE overriding peer dependency ... @effect/vitest ... effect`:** a Prisma CLI korábbi verzióinál a felhős telepítő rész (Prisma Composer) belső függőségei között volt egy verzióütközés (az `alchemy` újabb `@effect/vitest`-et kért, mint amilyen `effect` verziót a Composer rögzített). Az npm feloldotta, ezért csak figyelmeztetés volt, és egy `overrides` bejegyzés a `package.json`-ban eltüntette. A `prisma@8.0.0-rc.27` már nem okozza, ezért a bejegyzés törölve lett. Ha egy későbbi verziónál mégis előjönne a figyelmeztetés, az `"overrides": { "@effect/vitest": "<a Composer által kért verzió>" }` bejegyzéssel ismét elnémítható.
+**`npm warn ERESOLVE overriding peer dependency ... @effect/vitest ... effect`:** a Prisma CLI korábbi verzióinál a felhős telepítő rész (Prisma Composer) belső függőségei között volt egy verzióütközés (az `alchemy` újabb `@effect/vitest`-et kért, mint amilyen `effect` verziót a Composer rögzített). Az npm feloldotta, ezért csak figyelmeztetés volt, és egy `overrides` bejegyzés a `package.json`-ban eltüntette. A `prisma@8.0.0-rc.27` óta már nem jelentkezik, ezért a bejegyzés törölve lett. Ha egy későbbi verziónál mégis előjönne a figyelmeztetés, az `"overrides": { "@effect/vitest": "<a Composer által kért verzió>" }` bejegyzéssel ismét elnémítható.
 
 **`13 vulnerabilities (5 moderate, 8 high)`:** mind a 13 fejlesztői eszközök függőségeiből jön, amelyeket csak fejlesztés közben, a saját gépen használunk: a `prisma` parancssori eszközéből (Prisma Composer: `alchemy`, `@prisma/composer`, `@prisma/dev`, `hono`; sémaelemző: `chevrotain`, `lodash`, `valibot`) és az `eslint-config-next`-ből (`@next/eslint-plugin-next`, `fast-glob`, `micromatch`, `braces`). A futó alkalmazás függőségeiben (`next`, `@prisma/orm-postgres`, `dotenv`) nincs sérülékenység, ez így ellenőrizhető:
 
