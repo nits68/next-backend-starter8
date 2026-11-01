@@ -16,7 +16,7 @@ A kód mindkét esetben ugyanaz, csak a `.env` állományban lévő connection s
 >
 > Követelmények:
 >
-> - **Node.js 22.18+** (a 24-es ágon **24.11+**, a 24.0–24.10 nem jó), ajánlott a Node.js 24
+> - **Node.js 22.18+** (a 24-es ágon **24.11+**, a 24.0-24.10 nem jó), ajánlott a Node.js 24
 > - **TypeScript 5.9+** (a `create-next-app` jelenleg 5.9.x-et telepít)
 > - **PostgreSQL 15+** (a 18.x ajánlott)
 > - `"type": "module"` a `package.json`-ban (az `orm init` korábban beállította, az rc.27-es óta már nem, ezért kézzel add hozzá)
@@ -729,7 +729,7 @@ A kész migrációk alkalmazása egy másik adatbázisra (pl. Neonra, az aktív 
 > npx prisma db migrate --show<br>
 > npx prisma db migrate<br>
 
-## 10. contract emit, db update, db sign – mikor melyiket?
+## 10. contract emit, db update, db sign - mikor melyiket?
 
 Ez a három parancs a leggyakoribb, és könnyű összekeverni őket. Röviden: az **emit** a fájlokat frissíti, az **update** az adatbázist igazítja a contracthoz, a **sign** az adatbázison semmit nem változtat, csak rögzíti, hogy megfelel a contractnak.
 
