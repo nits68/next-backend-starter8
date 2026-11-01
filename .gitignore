@@ -45,3 +45,6 @@ dist/
 # prisma 8 (a "prisma contract emit" generálja, az npm install postinstall scriptje is)
 /prisma/contract.json
 /prisma/contract.d.ts
+
+# Supabase SSL gyökértanúsítvány (mindenki a saját Supabase Dashboardjáról tölti le)
+/supabase-ca.crt

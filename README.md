@@ -609,7 +609,48 @@ A migrációkat helyben érdemes elkészíteni, és a Neonra csak alkalmazni (l�
 | [Prisma Postgres](https://www.prisma.io/postgres)  | 50 adatbázis, 500 MB, havi 200 000 művelet | `npx create-db` egy ideiglenes adatbázist ad, a kiírt claim linkkel megtartható |
 | [Supabase](https://supabase.com)                   | 2 aktív projekt, 500 MB                    | 1 hét tétlenség után szünetel, kézzel kell újraindítani                       |
 
-Az árak és a korlátok gyakran változnak, a tanév elején érdemes ellenőrizni őket.
+Az árak és a korlátok gyakran változnak, nagyobb projekt kezdésekor érdemes ellenőrizni őket.
+
+### 6.5 Supabase
+
+1. Regisztráció a [supabase.com](https://supabase.com) oldalon (GitHub fiókkal is lehet), majd **New project**: add meg a projekt nevét, az adatbázis jelszavát (jegyezd fel, később nem látható!) és a régiót (pl. `Central EU (Frankfurt)`). A projekt a `postgres` nevű adatbázist kapja.
+2. A projektben a felső sávban a **Connect** gombbal nyílik meg a connection string. A **Connection String** fülön a **Method** listából választható a kapcsolat típusa.
+3. A `.env`-be két pooler cím kerüljön: a program a **Transaction pooler**-t (port `6543`, sok rövid kapcsolathoz), a Prisma CLI (migrációk, `contract infer`) a **Session pooler**-t (port `5432`) használja:
+
+```
+# --- Supabase ---
+DATABASE_URL="postgresql://postgres.<PROJEKT-AZONOSÍTÓ>:<JELSZÓ>@aws-0-<RÉGIÓ>.pooler.supabase.com:6543/postgres?uselibpqcompat=true&sslmode=require"
+DIRECT_URL="postgresql://postgres.<PROJEKT-AZONOSÍTÓ>:<JELSZÓ>@aws-0-<RÉGIÓ>.pooler.supabase.com:5432/postgres?uselibpqcompat=true&sslmode=require"
+```
+
+- A `<PROJEKT-AZONOSÍTÓ>`, a `<JELSZÓ>` és a `<RÉGIÓ>` helyére a Connect ablakból másolt értékek kerülnek (a felhasználónév `postgres.` + a projekt azonosítója). A pontos hostnevet mindig onnan másold, mert projektenként eltérhet.
+- **Ne a direkt kapcsolatot használd** (`db.<projekt-azonosító>.supabase.co`): az ingyenes csomagban ez csak IPv6-on érhető el, ami sok iskolai és otthoni hálózaton nem működik (a hiba ilyenkor pl. `getaddrinfo ENOTFOUND` vagy `ENETUNREACH`). A Session pooler ugyanazt tudja, és IPv4-en is elérhető.
+- **SSL:** a Supabase az adatbázis tanúsítványát a saját gyökértanúsítványával (CA) írja alá, amelyet a Node.js nem ismer. Ezért a `sslmode=verify-full` (és a `pg` driverben vele egyenértékű `sslmode=require`) ezzel a hibával áll le: `self-signed certificate in certificate chain` (`SELF_SIGNED_CERT_IN_CHAIN`). Két megoldás:
+
+  | Paraméter | Titkosít? | Ellenőrzi a tanúsítványt? |
+  | --------- | --------- | ------------------------- |
+  | `uselibpqcompat=true&sslmode=require` (a fenti minta) | igen | nem |
+  | `sslmode=verify-full&sslrootcert=supabase-ca.crt` | igen | igen, a Supabase CA-jával |
+
+  A második, biztonságosabb változathoz a Supabase Dashboardon: **Project Settings → Database → SSL Configuration → Download certificate**. A letöltött fájl (jellemzően `prod-ca-2021.crt`) nevezd át `supabase-ca.crt`-re, és másold a **projekt gyökerébe**, a `package.json` és a `.env` mellé:
+
+  ```
+  next-backend-starter8\
+  ├─ app\
+  ├─ prisma\
+  ├─ .env
+  ├─ package.json
+  └─ supabase-ca.crt
+  ```
+
+  A `pg` driver a `sslrootcert` útvonalát az aktuális mappához képest olvassa be. Az `npm run ...` scriptek, a `npx prisma ...` parancsok és az `npm run dev` a projekt gyökeréből futnak, ezért ott elég a fájlnév. Más mappából indítva teljes útvonal kell, perjellel: `sslrootcert=E:/.../next-backend-starter8/supabase-ca.crt`.
+
+  A tanúsítvány nyilvános, nem titkos adat, de mivel a Supabase-hez tartozik, és nem mindenki használ Supabase-t, a sablon `.gitignore`-ja kizárja (`/supabase-ca.crt`), így mindenki a saját példányát tölti le. A Neonnál és a Prisma Postgresnél erre nincs szükség, ott a `sslmode=verify-full` működik.
+- Az adatbázis eleve létezik, ezért a táblák létrehozásához elég: `npm run db:init`, majd `npm run db:seed`.
+
+**Szünetelés:** az ingyenes Supabase-projekt **1 hét tétlenség után szünetel** Ilyenkor a kapcsolódás hibát ad; a Supabase Dashboardon a projektnél a **Restore project** gombbal indítható újra (pár perc). Az ingyenes csomagban nincs automatikus mentés.
+
+Az adatok a Supabase Dashboard **Table Editor** és **SQL Editor** nézetében is kezelhetők.
 
 ## 7. Prisma contract létrehozása (minta modellek) ./prisma/contract.prisma
 
@@ -1037,6 +1078,7 @@ DELETE http://localhost:3000/api/filmek/1
 - **DBeaver Community:** ingyenes, sokféle adatbázist kezel
 - **VS Code PostgreSQL bővítmény** (Microsoft, `ms-ossdata.vscode-pgsql`): táblák böngészése, SQL futtatás a VS Code-ban
 - **Neon Console:** a Neon webes felületén SQL Editor és Tables nézet
+- **Supabase Dashboard:** a Supabase webes felületén Table Editor és SQL Editor
 - **psql:** parancssori kliens, pl. `psql -h localhost -U postgres -d mydb`
 
 ## 14. Hasznos trükkök, buktatók
