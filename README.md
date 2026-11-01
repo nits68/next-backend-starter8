@@ -12,7 +12,7 @@ Két környezetre készül:
 A kód mindkét esetben ugyanaz, csak a `.env` állományban lévő connection string különbözik.
 
 > [!IMPORTANT]
-> **A Prisma 8 jelenleg release candidate.** 2026 októberében `prisma@8.0.0-rc.28` (parancssori eszköz) és `@prisma/orm-postgres@8.0.0-rc.20` (könyvtár), a végleges kiadás hamarosan várható. A PostgreSQL-támogatás a legérettebb része, de a végleges kiadásig az API kis mértékben még változhat.
+> **A Prisma 8 jelenleg release candidate.** 2026 novemberében `prisma@8.0.0-rc.29` (parancssori eszköz) és `@prisma/orm-postgres@8.0.0-rc.22` (könyvtár), a végleges kiadás hamarosan várható. Mivel az RC-k között az írásmód is változhat (lásd 7. pont: dátummezők), a sablon a Prisma- és a Next.js-csomagokat **pontos verzióra rögzíti** (`^` nélkül, lásd 2.2). A PostgreSQL-támogatás a legérettebb része, de a végleges kiadásig az API kis mértékben még változhat.
 >
 > Követelmények:
 >
@@ -68,7 +68,25 @@ A parancssorban (`cmd`) ez akkor fordul elő, ha a mappába kisbetűvel lépsz b
 
 > npm i -D prettier typescript-eslint tsx<br>
 > npx prisma@latest orm init --yes --target postgres --authoring psl --schema-path prisma/contract.prisma --write-env<br>
+> npm i -E -D prisma@8.0.0-rc.29 @prisma/cli-engine@0.9.0<br>
+> npm i -E @prisma/orm-postgres@8.0.0-rc.22<br>
+> npm pkg set overrides.@prisma/orm-toolchain=8.0.0-rc.22<br>
+> npm install<br>
 > npm install-scripts deny esbuild unrs-resolver workerd<br>
+
+**Pontos verziók.** A Prisma 8 RC-i között nemcsak hibajavítások, hanem írásmód-változások is vannak (pl. a dátummezőknél, 7. pont). A `^` jel (pl. `^8.0.0-rc.22`) megengedné, hogy egy későbbi `npm install` magától újabb RC-t telepítsen, és a contract váratlanul hibás legyen. Ezért ez az öt csomag **pontos verzión** (`^` nélkül) szerepel a `package.json`-ban:
+
+| Csomag | Verzió | Miért rögzített? |
+| ------ | ------ | ---------------- |
+| `prisma` | `8.0.0-rc.29` | release candidate, az RC-k között változhat az írásmód |
+| `@prisma/orm-postgres` | `8.0.0-rc.22` | release candidate, a `prisma` CLI-vel együtt kell frissíteni |
+| `@prisma/cli-engine` | `0.9.0` | a `prisma.config.ts` ebből importál, a CLI-vel együtt kell frissíteni |
+| `next` | `16.4.3` | a `create-next-app` eleve pontos verzióval telepíti |
+| `eslint-config-next` | `16.4.3` | a `next`-tel azonos verziónak kell lennie |
+
+Az `-E` (`--save-exact`) kapcsoló írja a pontos verziót a `package.json`-ba (az `orm init` `^`-jellel telepít, ezért kell újra telepíteni a három Prisma-csomagot). A többi csomag (`dotenv`, `prettier`, `tsx`, `typescript` stb.) maradhat `^`-jellel. Frissíteni a Prisma-csomagokat tudatosan, együtt érdemes, szintén `-E`-vel (pl. `npm i -E -D prisma@latest`, `npm i -E @prisma/orm-postgres@latest`), utána az `overrides` verzióját az `@prisma/orm-postgres` verziójához kell igazítani, majd `npx prisma contract emit` és ellenőrzés.
+
+**Az `overrides` sor** a `prisma` CLI és az `@prisma/orm-postgres` közötti verzióeltérést javítja, lásd 2.4.
 
 A csomagok:
 
@@ -124,7 +142,17 @@ A 2.2 pont utolsó parancsa (`npm install-scripts deny esbuild unrs-resolver wor
 
 Egyik script sem kell a működéshez: az `esbuild` (ezt a `tsx` használja) és az `unrs-resolver` (ezt az `eslint-config-next` használja) a platformnak megfelelő binárisát külön csomagként kapja meg, a script csak ellenőrzi. A `workerd` (Cloudflare futtatókörnyezet) a Prisma CLI felhős telepítő részéhez (Prisma Composer) kell, a `contract emit`, `db ...` és `migration ...` parancsok nem használják. Kipróbálva: a `tsx`, az ESLint és a `next build` a letiltás után is működik. A függőben lévő csomagok listája: `npm install-scripts ls`. Ha később új csomag kerül a listára, ugyanígy dönthetsz róla (`approve` = engedélyez, `deny` = letilt).
 
-### 2.4 További telepítési figyelmeztetések (ERESOLVE, vulnerabilities)
+### 2.4 További telepítési figyelmeztetések, verzióeltérés (ERESOLVE, vulnerabilities, overrides)
+
+**`CLI.UNEXPECTED: Cannot use 'in' operator to search for 'kind' in typeChoice`** (a `prisma contract emit`, és vele a `postinstall` és a `build` futásakor): a `prisma` CLI és az `@prisma/orm-postgres` könyvtár nem illik össze. A `prisma@8.0.0-rc.29` a saját belső részeit (`@prisma/orm-toolchain`, `@prisma/orm-framework`) a 8.0.0-rc.21-es verzión rögzíti, az `@prisma/orm-postgres@8.0.0-rc.22` viszont rc.22-t használ, így a projektbe mindkettő bekerül, és a kettő nem érti egymás adatait. A `package.json` `overrides` bejegyzése a CLI-t is az rc.22-re kényszeríti, így egyetlen verzió marad:
+
+```json
+"overrides": {
+  "@prisma/orm-toolchain": "8.0.0-rc.22"
+}
+```
+
+Ellenőrzés: `npm ls @prisma/orm-framework` – csak egyféle verziószám szerepeljen. Frissítéskor az `overrides` verzióját az `@prisma/orm-postgres` verziójához kell igazítani; ha a `prisma` CLI egy későbbi verziója már ugyanazt használja, a bejegyzés törölhető.
 
 **`npm warn ERESOLVE overriding peer dependency ... @effect/vitest ... effect`:** a Prisma CLI korábbi verzióinál a felhős telepítő rész (Prisma Composer) belső függőségei között volt egy verzióütközés (az `alchemy` újabb `@effect/vitest`-et kért, mint amilyen `effect` verziót a Composer rögzített). Az npm feloldotta, ezért csak figyelmeztetés volt, és egy `overrides` bejegyzés a `package.json`-ban eltüntette. A `prisma@8.0.0-rc.27` óta már nem jelentkezik, ezért a bejegyzés törölve lett. Ha egy későbbi verziónál mégis előjönne a figyelmeztetés, az `"overrides": { "@effect/vitest": "<a Composer által kért verzió>" }` bejegyzéssel ismét elnémítható.
 
@@ -585,7 +613,7 @@ Az árak és a korlátok gyakran változnak, a tanév elején érdemes ellenőri
 
 ## 7. Prisma contract létrehozása (minta modellek) ./prisma/contract.prisma
 
-Három minta modell: `User` és `Post` (egy-a-többhöz kapcsolattal: egy felhasználónak több bejegyzése lehet), valamint a kapcsolat nélküli `Film`. Az `orm init` a `User` és `Post` modellt szöveges dátumtípusokkal (`TimestamptzString`, `temporal.updatedAtString()`) hozza létre, ezeket írd át a `JsDate`-es típusokra, hogy mindhárom modellben egyformán `Date` objektumként kapd a dátumokat:
+Három minta modell: `User` és `Post` (egy-a-többhöz kapcsolattal: egy felhasználónak több bejegyzése lehet), valamint a kapcsolat nélküli `Film`. Az `orm init` a `User` és `Post` modellt szöveges dátumtípusokkal hozza létre, ezeket írd át a `JsDate`-es típusokra, hogy mindhárom modellben egyformán `Date` objektumként kapd a dátumokat:
 
 ```prisma
 // use prisma-8
@@ -597,7 +625,7 @@ model User {
   name      String?
   posts     Post[]
   createdAt TimestamptzJsDate @default(now())
-  updatedAt temporal.updatedAtJsDate()
+  updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now())
 
   @@map("users")
 }
@@ -609,7 +637,7 @@ model Post {
   author    User              @relation(fields: [authorId], references: [id])
   authorId  Int
   createdAt TimestamptzJsDate @default(now())
-  updatedAt temporal.updatedAtJsDate()
+  updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now())
 
   @@map("posts")
 }
@@ -619,7 +647,7 @@ model Film {
   title     String            @unique
   content   String
   createdAt TimestamptzJsDate @default(now())
-  updatedAt temporal.updatedAtJsDate()
+  updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now())
 
   @@map("filmek")
 }
@@ -645,12 +673,20 @@ További tudnivalók:
 | Contract típus                    | PostgreSQL oszlop | Mikor kap értéket?                                                   |
 | --------------------------------- | ----------------- | -------------------------------------------------------------------- |
 | `TimestamptzJsDate @default(now())` | `timestamptz`   | létrehozáskor, az adatbázis órája szerint                            |
-| `temporal.createdAtJsDate()`      | `timestamptz`     | létrehozáskor, az alkalmazás órája szerint                           |
-| `temporal.updatedAtJsDate()`      | `timestamptz`     | létrehozáskor és minden módosításkor, az alkalmazás órája szerint    |
+| `TimestamptzJsDate @onCreate(now())` | `timestamptz`  | létrehozáskor, az alkalmazás órája szerint                           |
+| `TimestamptzJsDate @onCreate(now()) @onUpdate(now())` | `timestamptz` | létrehozáskor és minden módosításkor, az alkalmazás órája szerint |
 | `TimestamptzJsDate?`              | `timestamptz`     | amikor megadod (opcionális dátum)                                    |
 | `TimestamptzString`, `TimestampString` | `timestamptz`, `timestamp` | amikor megadod; a kódban szövegként (pl. `"2026-09-27 17:12:19"`) |
 
-A `JsDate` és `String` nélküli dátumtípusok (`DateTime`, `Timestamptz`, `Timestamp`, `Date`, `temporal.updatedAt()`) a JavaScript új `Temporal` API-ját használják, amely csak a Node.js 26-tól beépített. Node.js 24-en az ilyen mezők olvasása `RUNTIME.TEMPORAL_UNAVAILABLE` hibával leáll, ezért ezeket ne használd.
+> [!NOTE]
+> Az automatikusan kitöltött dátummezők írásmódja a Prisma 8 RC-i között többször változott. Egy régebbi contractban az alábbi alakok is előfordulhatnak, ezeket az rc.22 már nem fogadja el (`PSL_UNRESOLVED_REFERENCE ... Prisma 8 removed field presets`), az új alakra kell cserélni:
+>
+> | Régi alak | rc.22-től |
+> | --------- | --------- |
+> | `temporal.updatedAtJsDate()` (rc.12–17), `temporal.UpdatedAtJsDate` (rc.20–21) | `TimestamptzJsDate @onCreate(now()) @onUpdate(now())` |
+> | `temporal.createdAtJsDate()` | `TimestamptzJsDate @onCreate(now())` |
+
+A `JsDate` és `String` nélküli dátumtípusok (`DateTime`, `Timestamptz`, `Timestamp`, `Date`) a JavaScript új `Temporal` API-ját használják, amely csak a Node.js 26-tól beépített. Node.js 24-en az ilyen mezők olvasása `RUNTIME.TEMPORAL_UNAVAILABLE` hibával leáll, ezért ezeket ne használd.
 
 **`VarChar` mezők írása.** Ha a modellben pl. `nev VarChar(100)` szerepel, egy `string` értékre a TypeScript ezt a hibát adja: `Type 'string' is not assignable to type 'Varchar<100>'`. Megoldás:
 
@@ -1022,7 +1058,9 @@ DELETE http://localhost:3000/api/filmek/1
 - **`CLI.CONFIG_UNREADABLE ... config loading resolved E:/... instead of e:\...`:** a parancssor (`cmd`) kisbetűs meghajtójellel áll a mappában. Futtasd a parancsot PowerShellből (2.1 pont), vagy lépj be újra nagybetűvel: `cd /d E:\...`.
 - **`Cannot find module 'prisma/config'`:** a `prisma.config.ts`-ben a `definePrismaConfig`-et a `@prisma/cli-engine` csomagból kell importálni (3. pont).
 - **`Cannot find module '.../prisma/contract.json'`:** elmaradt a `prisma contract emit`. A contract minden módosítása után futtatni kell, különben a TypeScript sem látja az új mezőket (a VS Code-ban néha **TypeScript: Restart TS Server** is kell).
-- **`RUNTIME.TEMPORAL_UNAVAILABLE`:** a contractban `JsDate` nélküli dátumtípus (`DateTime`, `Timestamptz`, `Timestamp`, `temporal.updatedAt()`) szerepel, lásd 7. pont.
+- **`RUNTIME.TEMPORAL_UNAVAILABLE`:** a contractban `JsDate` nélküli dátumtípus (`DateTime`, `Timestamptz`, `Timestamp`) szerepel, lásd 7. pont.
+- **`CLI.UNEXPECTED: Cannot use 'in' operator to search for 'kind' in typeChoice`:** a `prisma` CLI és az `@prisma/orm-postgres` eltérő belső verziót használ. Megoldás: a `package.json` `overrides` bejegyzése (2.4 pont), majd `npm install`.
+- **`PSL_UNRESOLVED_REFERENCE ... was a field preset, and Prisma 8 removed field presets`:** a contractban régi írásmódú dátummező van (`temporal.updatedAtJsDate()`, `temporal.UpdatedAtJsDate`), a hibaüzenet megmondja az új alakot (7. pont).
 - **`DRIVER.CONNECTION_FAILED`:** nem fut a szerver, hibás a `.env`-ben a connection string, vagy nem létezik az adatbázis (a Prisma 8 nem hozza létre). A `why:` sor mondja meg a pontos okot:
   - `password authentication failed for user '...'`: rossz a jelszó, vagy (Neonon) a hostnévben helyőrző maradt (6.3 pont),
   - `database "..." does not exist`: nincs létrehozva az adatbázis, vagy kimaradt az URL-ből az adatbázisnév (`/neondb`, `/mydb`).
