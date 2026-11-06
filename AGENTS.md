@@ -65,12 +65,13 @@ prisma.config.ts        Prisma CLI config
 - **Format `prisma/contract.prisma` with the Prisma VS Code extension** (`Prisma.prisma`), not Prettier. `.vscode/settings.json` sets `"[prisma]": { "editor.defaultFormatter": "Prisma.prisma" }` with format on save. When you edit the contract, follow the extension's layout (aligned columns, one attribute block per line) so that the next format on save produces no diff.
 - There is no `datasource` / `generator` block.
 - Native PostgreSQL types go in the type position: `VarChar(200)`, `SmallInt`, `Numeric(8, 2)`, not `String @db.VarChar(200)`.
-- Use `@@map("table_name")` and `@map("column_name")` for database names (tables are plural, e.g. `@@map("films")`).
-- **Dates must use the `JsDate` types** (Node.js 24 has no global `Temporal`; `DateTime`, `Timestamptz`, `Timestamp`, `Date` fail at runtime with `RUNTIME.TEMPORAL_UNAVAILABLE`):
+- Use `@@map("table_name")` and `@map("column_name")` for database names: tables are plural (`@@map("films")`), multi-word columns are snake_case (`createdAt ... @map("created_at")`, `authorId Int @map("author_id")`). Without `@map` the column would be camelCase and need double quotes in every hand-written SQL statement. Changing a `@map` on an existing database is NOT a rename for Prisma: `db update` drops and re-adds the column (data loss), so ask the user first; for this template drop the tables and run `npm run db:setup`.
+- In raw SQL (`db.raw.sql`, e.g. the `TRUNCATE ... RESTART IDENTITY` in `prisma/seed.ts`) use the database names (`posts`, `author_id`), not the model/field names.
+- **Dates: use the `JsDate` / `String` types or their convenience aliases.** This template uses `TimestamptzJsDate`. Since rc.22 `DateTime` (= `TimestamptzJsDate`, `timestamptz(3)`; `DateTime(precision: 6)` for `timestamptz`) and `Date` (= `DateString`) are convenience types that also work, and `contract infer` writes them. Never use the Temporal types (`TimestamptzTemporal`, `DateTemporal`, `DateTime(as: temporal)`): Node.js 24 has no global `Temporal` (`RUNTIME.TEMPORAL_UNAVAILABLE`). Bare `Timestamptz` / `Timestamp` no longer exist. Do not swap `TimestamptzJsDate` for plain `DateTime` on an existing database: the precision differs (6 vs 3).
 
 ```prisma
-createdAt TimestamptzJsDate @default(now())
-updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now())
+createdAt TimestamptzJsDate @default(now()) @map("created_at")
+updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
 ```
 
 Do not use `@updatedAt`, `temporal.updatedAtJsDate()` or `temporal.UpdatedAtJsDate` (removed in rc.22).
@@ -167,6 +168,7 @@ If the database schema changed, also run `npm run db:update -- --dry-run` and re
 
 ## References
 
+- `DATE-TIME.md` – date/time types: PostgreSQL ↔ Prisma 8 ↔ TypeScript ↔ JSON, time zones; note that `...JsDate` fields accept only `Date` objects (convert `request.json()` strings with `new Date(...)`)
 - `README.md` – full setup guide (Hungarian): installation, databases (local PostgreSQL, Neon, Prisma Postgres, Supabase), troubleshooting (section 14)
 - `prisma-8.md` – short Prisma 8 reference written by `prisma orm init`
 - Prisma ORM 8 docs: https://www.prisma.io/docs/orm (append `.md` to any docs URL for Markdown)

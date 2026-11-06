@@ -3,19 +3,19 @@
 model Film {
   id        Int               @id() @default(autoincrement())
   content   String
-  createdAt TimestamptzJsDate @default(now())
+  createdAt TimestamptzJsDate @default(now()) @map("created_at")
   title     String            @unique()
-  updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now())
+  updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
 
   @@map("films")
 }
 
 model User {
   id        Int               @id() @default(autoincrement())
-  createdAt TimestamptzJsDate @default(now())
+  createdAt TimestamptzJsDate @default(now()) @map("created_at")
   email     String            @unique()
   name      String?
-  updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now())
+  updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
   username  String?
   posts     Post[]
 
@@ -24,12 +24,12 @@ model User {
 
 model Post {
   id        Int               @id() @default(autoincrement())
-  authorId  Int
+  authorId  Int               @map("author_id")
   content   String?
-  createdAt TimestamptzJsDate @default(now())
+  createdAt TimestamptzJsDate @default(now()) @map("created_at")
   title     String
-  updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now())
-  author    User              @relation(fields: [authorId], references: [id], map: "posts_authorId_fkey")
+  updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
+  author    User              @relation(fields: [authorId], references: [id], map: "posts_author_id_fkey")
 
   @@index([authorId])
   @@map("posts")

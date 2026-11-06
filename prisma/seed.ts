@@ -45,33 +45,83 @@ const USERS = [
 
 // Minta bejegyzések: a szerzőt a felhasználó emailjével adjuk meg
 const POSTS = [
-  { szerzo: "kiss.anna@pelda.hu", title: "Kedvenc magyar filmem", content: "A Körhinta minden alkalommal megríkat." },
-  { szerzo: "kiss.anna@pelda.hu", title: "Filmklub csütörtökön", content: "A tanú lesz a következő film." },
+  {
+    szerzo: "kiss.anna@pelda.hu",
+    title: "Kedvenc magyar filmem",
+    content: "A Körhinta minden alkalommal megríkat.",
+  },
+  {
+    szerzo: "kiss.anna@pelda.hu",
+    title: "Filmklub csütörtökön",
+    content: "A tanú lesz a következő film.",
+  },
   { szerzo: "kiss.anna@pelda.hu", title: "Klasszikusok hétvégére", content: null },
-  { szerzo: "nagy.peter@pelda.hu", title: "Macskafogó újranézve", content: "Felnőttként is ugyanolyan jó." },
-  { szerzo: "nagy.peter@pelda.hu", title: "Animációs filmek listája", content: "Vuk, Macskafogó, Fehérlófia." },
+  {
+    szerzo: "nagy.peter@pelda.hu",
+    title: "Macskafogó újranézve",
+    content: "Felnőttként is ugyanolyan jó.",
+  },
+  {
+    szerzo: "nagy.peter@pelda.hu",
+    title: "Animációs filmek listája",
+    content: "Vuk, Macskafogó, Fehérlófia.",
+  },
   { szerzo: "szabo.eszter@pelda.hu", title: "Saul fia élmény", content: "Nehéz, de fontos film." },
   { szerzo: "toth.gabor@pelda.hu", title: "Üvegtigris idézetek", content: "Melyik a kedvencetek?" },
   { szerzo: "toth.gabor@pelda.hu", title: "Vígjátékok estére", content: null },
-  { szerzo: "horvath.lilla@pelda.hu", title: "Kontroll forgatási helyszínek", content: "A budapesti metróban forgott." },
-  { szerzo: "varga.bence@pelda.hu", title: "Egri csillagok: könyv vagy film?", content: "Szerintem a könyv jobb." },
-  { szerzo: "kovacs.reka@pelda.hu", title: "Testről és lélekről", content: "Különleges hangulatú film." },
+  {
+    szerzo: "horvath.lilla@pelda.hu",
+    title: "Kontroll forgatási helyszínek",
+    content: "A budapesti metróban forgott.",
+  },
+  {
+    szerzo: "varga.bence@pelda.hu",
+    title: "Egri csillagok: könyv vagy film?",
+    content: "Szerintem a könyv jobb.",
+  },
+  {
+    szerzo: "kovacs.reka@pelda.hu",
+    title: "Testről és lélekről",
+    content: "Különleges hangulatú film.",
+  },
   { szerzo: "kovacs.reka@pelda.hu", title: "Romantikus filmek", content: null },
-  { szerzo: "molnar.adam@pelda.hu", title: "Háborús drámák", content: "Az ötödik pecsét és a Valahol Európában." },
-  { szerzo: "farkas.zsofia@pelda.hu", title: "Régi magyar vígjátékok", content: "Hyppolit, a lakáj - örök klasszikus." },
+  {
+    szerzo: "molnar.adam@pelda.hu",
+    title: "Háborús drámák",
+    content: "Az ötödik pecsét és a Valahol Európában.",
+  },
+  {
+    szerzo: "farkas.zsofia@pelda.hu",
+    title: "Régi magyar vígjátékok",
+    content: "Hyppolit, a lakáj - örök klasszikus.",
+  },
   { szerzo: "balogh.mate@pelda.hu", title: "Csinibaba zenéi", content: "A dalokat ma is dúdolom." },
-  { szerzo: "papp.noemi@pelda.hu", title: "Szindbád és a gasztronómia", content: "A húsleves-jelenet legendás." },
-  { szerzo: "lakatos.daniel@pelda.hu", title: "Mephisto - Oscar-díj", content: "1982-ben nyert Oscart." },
+  {
+    szerzo: "papp.noemi@pelda.hu",
+    title: "Szindbád és a gasztronómia",
+    content: "A húsleves-jelenet legendás.",
+  },
+  {
+    szerzo: "lakatos.daniel@pelda.hu",
+    title: "Mephisto - Oscar-díj",
+    content: "1982-ben nyert Oscart.",
+  },
   { szerzo: "simon.petra@pelda.hu", title: "Első bejegyzésem", content: "Sziasztok!" },
   { szerzo: "fekete.levente@pelda.hu", title: "Ajánlás hétvégére", content: "Indul a bakterház!" },
-  { szerzo: "fekete.levente@pelda.hu", title: "Jókai-feldolgozások", content: "A kőszívű ember fiai is nagyon jó." },
+  {
+    szerzo: "fekete.levente@pelda.hu",
+    title: "Jókai-feldolgozások",
+    content: "A kőszívű ember fiai is nagyon jó.",
+  },
 ];
 
 async function main() {
-  // Törlés a hivatkozások miatt fordított sorrendben: előbb a bejegyzések, utána a felhasználók
-  await db.orm.public.Post.where({}).deleteAll();
-  await db.orm.public.User.where({}).deleteAll();
-  await db.orm.public.Film.where({}).deleteAll();
+  // Minden tábla kiürítése, és az id sorozatok (sequence) visszaállítása 1-re, hogy újrafuttatás
+  // után is 1-től kezdődjenek az id-k. (A deleteAll() csak a sorokat törli, a sorozatot nem.)
+  // Nyers SQL, ezért az adatbázisbeli táblaneveket használja (posts, users, films).
+  await db.query(
+    db.raw.sql`TRUNCATE TABLE posts, users, films RESTART IDENTITY`.affectedCount().build(),
+  );
 
   await db.orm.public.Film.createAll(FILMS);
 

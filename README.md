@@ -37,18 +37,18 @@ Kérdések nélkül, beállítással kapcsolókkal:
 
 A kapcsolók:
 
-| Kapcsoló                  | Jelentése                                                                          |
-| ------------------------- | ---------------------------------------------------------------------------------- |
-| `--api`                   | csak API (App Router route handlerek), felhasználói felület nélkül                 |
-| `--ts`                    | TypeScript                                                                         |
-| `--eslint`                | ESLint                                                                             |
-| `--app`                   | app router-t használ                                                               |
-| `--no-tailwind`           | Tailwind CSS nélkül (API-hoz nem kell)                                             |
-| `--no-src-dir`            | nincs `src` mappa, az `app` a projekt gyökerében van                               |
-| `--no-react-compiler`     | React Compiler nélkül                                                              |
-| `--no-agents-md`          | nem hozza létre az AI-kódolóügynököknek szóló `AGENTS.md` és `CLAUDE.md` fájlokat  |
-| `--import-alias "@/*"`    | az `@/` előtag a projekt gyökerére mutat (pl. `@/prisma/db`)                       |
-| `--use-npm`               | npm csomagkezelő                                                                   |
+| Kapcsoló               | Jelentése                                                                         |
+| ---------------------- | --------------------------------------------------------------------------------- |
+| `--api`                | csak API (App Router route handlerek), felhasználói felület nélkül                |
+| `--ts`                 | TypeScript                                                                        |
+| `--eslint`             | ESLint                                                                            |
+| `--app`                | app router-t használ                                                              |
+| `--no-tailwind`        | Tailwind CSS nélkül (API-hoz nem kell)                                            |
+| `--no-src-dir`         | nincs `src` mappa, az `app` a projekt gyökerében van                              |
+| `--no-react-compiler`  | React Compiler nélkül                                                             |
+| `--no-agents-md`       | nem hozza létre az AI-kódolóügynököknek szóló `AGENTS.md` és `CLAUDE.md` fájlokat |
+| `--import-alias "@/*"` | az `@/` előtag a projekt gyökerére mutat (pl. `@/prisma/db`)                      |
+| `--use-npm`            | npm csomagkezelő                                                                  |
 
 Az `--api` sablon ESLint konfigurációs fájlt nem hoz létre, azt a 4. pontban pótoljuk.
 
@@ -74,13 +74,13 @@ A parancssorban (`cmd`) ez akkor fordul elő, ha a mappába kisbetűvel lépsz b
 
 **Pontos verziók.** A Prisma 8 RC-i között nemcsak hibajavítások, hanem írásmód-változások is vannak (pl. a dátummezőknél, 7. pont). A `^` jel (pl. `^8.0.0-rc.23`) megengedné, hogy egy későbbi `npm install` magától újabb RC-t telepítsen, és a contract váratlanul hibás legyen. Ezért ez az öt csomag **pontos verzión** (`^` nélkül) szerepel a `package.json`-ban:
 
-| Csomag | Verzió | Miért rögzített? |
-| ------ | ------ | ---------------- |
-| `prisma` | `8.0.0-rc.33` | release candidate, az RC-k között változhat az írásmód |
-| `@prisma/orm-postgres` | `8.0.0-rc.23` | release candidate, a `prisma` CLI-vel együtt kell frissíteni |
-| `@prisma/cli-engine` | `0.9.0` | a `prisma.config.ts` ebből importál, a CLI-vel együtt kell frissíteni |
-| `next` | `16.4.4` | a `create-next-app` eleve pontos verzióval telepíti |
-| `eslint-config-next` | `16.4.4` | a `next`-tel azonos verziónak kell lennie |
+| Csomag                 | Verzió        | Miért rögzített?                                                      |
+| ---------------------- | ------------- | --------------------------------------------------------------------- |
+| `prisma`               | `8.0.0-rc.33` | release candidate, az RC-k között változhat az írásmód                |
+| `@prisma/orm-postgres` | `8.0.0-rc.23` | release candidate, a `prisma` CLI-vel együtt kell frissíteni          |
+| `@prisma/cli-engine`   | `0.9.0`       | a `prisma.config.ts` ebből importál, a CLI-vel együtt kell frissíteni |
+| `next`                 | `16.4.4`      | a `create-next-app` eleve pontos verzióval telepíti                   |
+| `eslint-config-next`   | `16.4.4`      | a `next`-tel azonos verziónak kell lennie                             |
 
 Az `-E` (`--save-exact`) kapcsoló írja a pontos verziót a `package.json`-ba (az `orm init` `^`-jellel telepít, ezért kell újra telepíteni a három Prisma-csomagot). A többi csomag (`dotenv`, `prettier`, `tsx`, `typescript` stb.) maradhat `^`-jellel.
 
@@ -208,16 +208,16 @@ A `definePrismaConfig` az `orm init` által írt `@prisma/cli-engine` csomagból
 
 ```json
 {
-    "recommendations": [
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode",
-        "prisma.prisma",
-        "humao.rest-client",
-        "ms-ossdata.vscode-pgsql",
-        "usernamehw.errorlens",
-        "abdulowhab.json-to-ts-type",
-        "yoavbls.pretty-ts-errors"
-    ]
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "prisma.prisma",
+    "humao.rest-client",
+    "ms-ossdata.vscode-pgsql",
+    "usernamehw.errorlens",
+    "abdulowhab.json-to-ts-type",
+    "yoavbls.pretty-ts-errors"
+  ]
 }
 ```
 
@@ -266,18 +266,18 @@ A Prisma VS Code bővítmény csak azokat a `.prisma` állományokat kezeli Pris
       "script": "dev",
       "group": {
         "kind": "build",
-        "isDefault": true
-      }
+        "isDefault": true,
+      },
     },
     {
       "type": "npm",
       "script": "test",
       "group": {
         "kind": "test",
-        "isDefault": true
-      }
-    }
-  ]
+        "isDefault": true,
+      },
+    },
+  ],
 }
 ```
 
@@ -610,11 +610,11 @@ A migrációkat helyben érdemes elkészíteni, és a Neonra csak alkalmazni (l�
 
 ### 6.4 További népszerű (ingyenes csomaggal is elérhető) PostgreSQL szolgáltatások
 
-| Szolgáltató                                        | Ingyenes keret (2026. szeptember)          | Megjegyzés                                                                    |
-| -------------------------------------------------- | ------------------------------------------ | ----------------------------------------------------------------------------- |
-| [Neon](https://neon.com)                           | 100 projekt, 0,5 GB/projekt                | nem szünetel, adatbázis-ágak (branching), a Vercel is ezt kínálja             |
-| [Prisma Postgres](https://www.prisma.io/postgres)  | 50 adatbázis, 500 MB, havi 200 000 művelet | `npx create-db` egy ideiglenes adatbázist ad, a kiírt claim linkkel megtartható |
-| [Supabase](https://supabase.com)                   | 2 aktív projekt, 500 MB                    | 1 hét tétlenség után szünetel, kézzel kell újraindítani                       |
+| Szolgáltató                                       | Ingyenes keret (2026. szeptember)          | Megjegyzés                                                                      |
+| ------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------- |
+| [Neon](https://neon.com)                          | 100 projekt, 0,5 GB/projekt                | nem szünetel, adatbázis-ágak (branching), a Vercel is ezt kínálja               |
+| [Prisma Postgres](https://www.prisma.io/postgres) | 50 adatbázis, 500 MB, havi 200 000 művelet | `npx create-db` egy ideiglenes adatbázist ad, a kiírt claim linkkel megtartható |
+| [Supabase](https://supabase.com)                  | 2 aktív projekt, 500 MB                    | 1 hét tétlenség után szünetel, kézzel kell újraindítani                         |
 
 Az árak és a korlátok gyakran változnak, nagyobb projekt kezdésekor érdemes ellenőrizni őket.
 
@@ -634,10 +634,10 @@ DIRECT_URL="postgresql://postgres.<PROJEKT-AZONOSÍTÓ>:<JELSZÓ>@aws-0-<RÉGIÓ
 - **Ne a direkt kapcsolatot használd** (`db.<projekt-azonosító>.supabase.co`): az ingyenes csomagban ez csak IPv6-on érhető el, ami sok iskolai és otthoni hálózaton nem működik (a hiba ilyenkor pl. `getaddrinfo ENOTFOUND` vagy `ENETUNREACH`). A Session pooler ugyanazt tudja, és IPv4-en is elérhető.
 - **SSL:** a Supabase az adatbázis tanúsítványát a saját gyökértanúsítványával (CA) írja alá, amelyet a Node.js nem ismer. Ezért a `sslmode=verify-full` (és a `pg` driverben vele egyenértékű `sslmode=require`) ezzel a hibával áll le: `self-signed certificate in certificate chain` (`SELF_SIGNED_CERT_IN_CHAIN`). Két megoldás:
 
-  | Paraméter | Titkosít? | Ellenőrzi a tanúsítványt? |
-  | --------- | --------- | ------------------------- |
-  | `uselibpqcompat=true&sslmode=require` (a fenti minta) | igen | nem |
-  | `sslmode=verify-full&sslrootcert=supabase-ca.crt` | igen | igen, a Supabase CA-jával |
+  | Paraméter                                             | Titkosít? | Ellenőrzi a tanúsítványt? |
+  | ----------------------------------------------------- | --------- | ------------------------- |
+  | `uselibpqcompat=true&sslmode=require` (a fenti minta) | igen      | nem                       |
+  | `sslmode=verify-full&sslrootcert=supabase-ca.crt`     | igen      | igen, a Supabase CA-jával |
 
   A második, biztonságosabb változathoz a Supabase Dashboardon: **Project Settings → Database → SSL Configuration → Download certificate**. A letöltött fájl (jellemzően `prod-ca-2021.crt`) nevezd át `supabase-ca.crt`-re, és másold a **projekt gyökerébe**, a `package.json` és a `.env` mellé:
 
@@ -653,6 +653,7 @@ DIRECT_URL="postgresql://postgres.<PROJEKT-AZONOSÍTÓ>:<JELSZÓ>@aws-0-<RÉGIÓ
   A `pg` driver a `sslrootcert` útvonalát az aktuális mappához képest olvassa be. Az `npm run ...` scriptek, a `npx prisma ...` parancsok és az `npm run dev` a projekt gyökeréből futnak, ezért ott elég a fájlnév. Más mappából indítva teljes útvonal kell, perjellel: `sslrootcert=E:/.../next-backend-starter8/supabase-ca.crt`.
 
   A tanúsítvány nyilvános, nem titkos adat, de mivel a Supabase-hez tartozik, és nem mindenki használ Supabase-t, a sablon `.gitignore`-ja kizárja (`/supabase-ca.crt`), így mindenki a saját példányát tölti le. A Neonnál és a Prisma Postgresnél erre nincs szükség, ott a `sslmode=verify-full` működik.
+
 - Az adatbázis eleve létezik, ezért a táblák létrehozásához elég: `npm run db:init`, majd `npm run db:seed`.
 
 **Szünetelés:** az ingyenes Supabase-projekt **1 hét tétlenség után szünetel** Ilyenkor a kapcsolódás hibát ad; a Supabase Dashboardon a projektnél a **Restore project** gombbal indítható újra (pár perc). Az ingyenes csomagban nincs automatikus mentés.
@@ -672,8 +673,8 @@ model User {
   username  String?
   name      String?
   posts     Post[]
-  createdAt TimestamptzJsDate @default(now())
-  updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now())
+  createdAt TimestamptzJsDate @default(now()) @map("created_at")
+  updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
 
   @@map("users")
 }
@@ -683,9 +684,9 @@ model Post {
   title     String
   content   String?
   author    User              @relation(fields: [authorId], references: [id])
-  authorId  Int
-  createdAt TimestamptzJsDate @default(now())
-  updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now())
+  authorId  Int               @map("author_id")
+  createdAt TimestamptzJsDate @default(now()) @map("created_at")
+  updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
 
   @@map("posts")
 }
@@ -694,10 +695,10 @@ model Film {
   id        Int               @id @default(autoincrement())
   title     String            @unique
   content   String
-  createdAt TimestamptzJsDate @default(now())
-  updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now())
+  createdAt TimestamptzJsDate @default(now()) @map("created_at")
+  updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
 
-  @@map("filmek")
+  @@map("films")
 }
 ```
 
@@ -715,26 +716,41 @@ További tudnivalók:
 - A `@unique`-ból valódi `UNIQUE` megszorítás lesz az adatbázisban.
 - A kódban a modellek elérése: `db.orm.public.User`, `db.orm.public.Post`, `db.orm.public.Film` (`public` a PostgreSQL séma neve).
 - A `@@map("users")` a tábla nevét adja meg (a modell neve `User`, a táblaé `users`).
+- A `@map("created_at")` az oszlop nevét adja meg: a kódban a mező `createdAt` (camelCase), az adatbázisban az oszlop `created_at` (snake_case). `@map` nélkül az oszlop neve is `createdAt` lenne, amit a PostgreSQL-ben minden kézzel írt SQL-ben idézőjelbe kellene tenni (`SELECT "createdAt" FROM users`), mert az idézőjel nélküli neveket kisbetűsre alakítja. A `snake_case` oszlopnév idézőjel nélkül is működik, és a `contract infer` is ezt a párosítást adja vissza.
+- Egy már meglévő adatbázisban az oszlop átnevezését (`@map` hozzáadása vagy módosítása) a Prisma nem ismeri fel átnevezésként: a `db update` törölné a régi oszlopot és újat hozna létre, az adatok elvesznének. A sablonnál ilyenkor egyszerűbb a táblákat törölni (pl. pgAdminban: `DROP TABLE posts, users, films;`), majd `npm run db:setup`: a `db init` újra létrehozza a táblákat és felülírja a régi aláírást, a seed pedig újratölti az adatokat.
 
 **Dátumtípusok.** A dátumokhoz a `JsDate` végű típusokat használjuk, ezek JavaScript `Date` objektumként érkeznek, a JSON válaszban pedig ISO dátumszövegként (pl. `"2026-09-27T15:15:29.257Z"`) jelennek meg:
 
-| Contract típus                    | PostgreSQL oszlop | Mikor kap értéket?                                                   |
-| --------------------------------- | ----------------- | -------------------------------------------------------------------- |
-| `TimestamptzJsDate @default(now())` | `timestamptz`   | létrehozáskor, az adatbázis órája szerint                            |
-| `TimestamptzJsDate @onCreate(now())` | `timestamptz`  | létrehozáskor, az alkalmazás órája szerint                           |
-| `TimestamptzJsDate @onCreate(now()) @onUpdate(now())` | `timestamptz` | létrehozáskor és minden módosításkor, az alkalmazás órája szerint |
-| `TimestamptzJsDate?`              | `timestamptz`     | amikor megadod (opcionális dátum)                                    |
-| `TimestamptzString`, `TimestampString` | `timestamptz`, `timestamp` | amikor megadod; a kódban szövegként (pl. `"2026-09-27 17:12:19"`) |
+| Contract típus                                        | PostgreSQL oszlop          | Mikor kap értéket?                                                |
+| ----------------------------------------------------- | -------------------------- | ----------------------------------------------------------------- |
+| `TimestamptzJsDate @default(now())`                   | `timestamptz`              | létrehozáskor, az adatbázis órája szerint                         |
+| `TimestamptzJsDate @onCreate(now())`                  | `timestamptz`              | létrehozáskor, az alkalmazás órája szerint                        |
+| `TimestamptzJsDate @onCreate(now()) @onUpdate(now())` | `timestamptz`              | létrehozáskor és minden módosításkor, az alkalmazás órája szerint |
+| `TimestamptzJsDate?`                                  | `timestamptz`              | amikor megadod (opcionális dátum)                                 |
+| `TimestamptzString`, `TimestampString`                | `timestamptz`, `timestamp` | amikor megadod; a kódban szövegként (pl. `"2026-09-27 17:12:19"`) |
 
 > [!NOTE]
 > Az automatikusan kitöltött dátummezők írásmódja a Prisma 8 RC-i között többször változott. Egy régebbi contractban az alábbi alakok is előfordulhatnak, ezeket az rc.22 már nem fogadja el (`PSL_UNRESOLVED_REFERENCE ... Prisma 8 removed field presets`), az új alakra kell cserélni:
 >
-> | Régi alak | rc.22-től |
-> | --------- | --------- |
+> | Régi alak                                                                      | rc.22-től                                             |
+> | ------------------------------------------------------------------------------ | ----------------------------------------------------- |
 > | `temporal.updatedAtJsDate()` (rc.12–17), `temporal.UpdatedAtJsDate` (rc.20–21) | `TimestamptzJsDate @onCreate(now()) @onUpdate(now())` |
-> | `temporal.createdAtJsDate()` | `TimestamptzJsDate @onCreate(now())` |
+> | `temporal.createdAtJsDate()`                                                   | `TimestamptzJsDate @onCreate(now())`                  |
 
-A `JsDate` és `String` nélküli dátumtípusok (`DateTime`, `Timestamptz`, `Timestamp`, `Date`) a JavaScript új `Temporal` API-ját használják, amely csak a Node.js 26-tól beépített. Node.js 24-en az ilyen mezők olvasása `RUNTIME.TEMPORAL_UNAVAILABLE` hibával leáll, ezért ezeket ne használd.
+> Részletes összefoglaló a dátum- és időtípusokról (PostgreSQL, Prisma 8, TypeScript, JSON, időzónák, írás és szűrés): [DATE-TIME.md](DATE-TIME.md).
+
+**Rövid alakok (rc.22-től).** A `DateTime` és a `Date` úgynevezett kényelmi (convenience) típus, amely a paramétereiből választ konkrét típust:
+
+| Rövid alak               | Ugyanaz, mint          | PostgreSQL oszlop                               | A kódban                |
+| ------------------------ | ---------------------- | ----------------------------------------------- | ----------------------- |
+| `DateTime`               | `TimestamptzJsDate(3)` | `timestamptz(3)` (ezredmásodperc)               | `Date` objektum         |
+| `DateTime(precision: 6)` | `TimestamptzJsDate`    | `timestamptz` (6, a PostgreSQL alapértelmezése) | `Date` objektum         |
+| `DateTime(as: string)`   | `TimestamptzString`    | `timestamptz`                                   | szöveg                  |
+| `Date`                   | `DateString`           | `date`                                          | szöveg (`"2026-09-27"`) |
+
+A `contract infer` is ezeket a rövid alakokat írja (`Date`, `DateTime(precision: 6)`), ezek átírás nélkül használhatók. A sablon a beszédesebb `TimestamptzJsDate` alakot használja; a `DateTime` magában `timestamptz(3)` oszlopot jelent, ezért egy már létező adatbázisnál a kettő nem cserélhető fel migráció nélkül.
+
+A `Temporal` végű típusok (`TimestamptzTemporal`, `DateTemporal`, `DateTime(as: temporal)`) a JavaScript új `Temporal` API-ját használják, amely csak a Node.js 26-tól beépített. Node.js 24-en az ilyen mezők olvasása `RUNTIME.TEMPORAL_UNAVAILABLE` hibával leáll, ezért ezeket ne használd. A régebbi RC-k végződés nélküli `Timestamptz` és `Timestamp` típusa megszűnt (`PSL_UNRESOLVED_REFERENCE`).
 
 **`VarChar` mezők írása.** Ha a modellben pl. `nev VarChar(100)` szerepel, egy `string` értékre a TypeScript ezt a hibát adja: `Type 'string' is not assignable to type 'Varchar<100>'`. Megoldás:
 
@@ -768,6 +784,7 @@ A parancs felülírja a megadott contractot. A Prisma 7-es `db pull`-hoz képest
 - a modellek PascalCase nevet kapnak (`konyvek` tábla → `model Konyvek` + `@@map("konyvek")`),
 - a mezők camelCase nevet (`szerzo_id` oszlop → `szerzoId` + `@map("szerzo_id")`),
 - a `CHECK` megszorítások is bekerülnek (`@@check(...)`),
+- a megszorítások és indexek adatbázisbeli neve `map: "..."` alakban kerül be (pl. `@id(map: "konyvek_pkey")`, `@@index([szerzoId], map: "konyvek_szerzo_id_idx")`). Az infer ezeket mindig kiírja (nem állítható be), és **ne töröld őket**: az index nélkülük más (hash-elt) nevet kapna, a `@@check` pedig név nélkül le sem fordul, így a `db sign` hibát adna,
 - az elsődleges kulcs nélküli táblákat `// WARNING: This table has no primary key in the database` megjegyzés jelzi (ilyenkor adj a táblának elsődleges kulcsot).
 
 Átnézés után (modellnevek egyes számba: `Konyvek` → `Konyv`, a `@@map` maradjon!):
@@ -789,8 +806,8 @@ A `db sign` ellenőrzi, hogy az adatbázis megfelel-e a contractnak, és aláír
 
 Figyelj a típusokra, mielőtt emitálsz:
 
-- A `timestamptz` oszlopok `Timestamptz` típust kapnak: írd át `TimestamptzJsDate`-re (az oszlop típusa ugyanaz marad).
-- A `timestamp` oszlopok `Timestamp` típust kapnak: írd át `TimestampString`-re (az oszlop típusa ugyanaz marad, a kódban szövegként kapod), vagy alakítsd az oszlopot `timestamptz`-re.
+- A `timestamptz` oszlopok `DateTime(precision: 6)`, a `date` oszlopok `Date` típust kapnak: ezek Node.js 24-en is jók (`Date` objektum, illetve szöveg), nem kell átírni őket (7. pont, rövid alakok).
+- A `timestamp` (időzóna nélküli) oszlopok `DateTime(storage: timestamp, precision: 6)` típust kapnak, a kódban `Date` objektumként; ha szövegként kell, írd át `TimestampString`-re (az oszlop típusa ugyanaz marad), vagy alakítsd az oszlopot `timestamptz`-re. A `time` oszlop `Time` típust kap (szöveg).
 - A `varchar` oszlopok `VarChar(n)` típust kapnak, ezekbe írni csak típuskényszerítéssel lehet (lásd 7. pont).
 - A `Numeric` típusú mezők szövegként jönnek vissza (pl. `"3990.00"`).
 - A `CHECK` megszorításoknál az emit `PN_EXACT_NAME_BODY_COMPARISON` figyelmeztetést írhat ki. Ez a `contract infer`-ből származó megszorításoknál nem okoz gondot.
@@ -827,11 +844,11 @@ A kész migrációk alkalmazása egy másik adatbázisra (pl. Neonra, az aktív 
 
 Ez a három parancs a leggyakoribb, és könnyű összekeverni őket. Röviden: az **emit** a fájlokat frissíti, az **update** az adatbázist igazítja a contracthoz, a **sign** az adatbázison semmit nem változtat, csak rögzíti, hogy megfelel a contractnak.
 
-| Parancs                | Mit csinál?                                                                                             | Kell hozzá adatbázis? | Módosítja az adatbázist?                  |
-| ---------------------- | ------------------------------------------------------------------------------------------------------- | --------------------- | ----------------------------------------- |
-| `prisma contract emit` | a `contract.prisma`-ból elkészíti a `contract.json` és `contract.d.ts` fájlt (a kód és a TypeScript ezeket használja) | nem                   | nem                                       |
+| Parancs                | Mit csinál?                                                                                                                | Kell hozzá adatbázis? | Módosítja az adatbázist?                      |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------- | --------------------- | --------------------------------------------- |
+| `prisma contract emit` | a `contract.prisma`-ból elkészíti a `contract.json` és `contract.d.ts` fájlt (a kód és a TypeScript ezeket használja)      | nem                   | nem                                           |
 | `prisma db update`     | összeveti az adatbázist a contracttal, a különbséget végrehajtja (tábla, oszlop, index létrehozása, törlése), majd aláírja | igen                  | **igen** (adatvesztés előtt megerősítést kér) |
-| `prisma db sign`       | ellenőrzi, hogy az adatbázis megfelel-e a contractnak; ha igen, aláírja (a jelölőt frissíti)             | igen                  | nem (csak a jelölőt írja)                 |
+| `prisma db sign`       | ellenőrzi, hogy az adatbázis megfelel-e a contractnak; ha igen, aláírja (a jelölőt frissíti)                               | igen                  | nem (csak a jelölőt írja)                     |
 
 ### Az összes parancs röviden
 
@@ -842,17 +859,17 @@ Négy fogalom kell hozzájuk:
 - **migráció:** egy mentett, commitolható lépés (`migrations/app` mappa), amely leírja, hogyan jut el az adatbázis a contract egyik változatáról a következőre.
 - **`db` hivatkozás (ref):** a `migrations/app/refs/db.json` fájl. Azt jegyzi, hogy a fejlesztői adatbázis a contract melyik változatánál tart, a következő `migration plan` innen indul.
 
-| Parancs | Röviden | Csatlakozik az adatbázishoz? | Módosítja az adatbázist? |
-| ------- | ------- | ---------------------------- | ------------------------ |
-| `npx prisma contract infer --output ./prisma/contract.prisma` | a meglévő adatbázisból contract-fájlt készít | igen | nem (a `contract.prisma`-t írja felül) |
-| `npx prisma contract emit` | a contractból elkészíti a kód által használt fájlokat | nem | nem |
-| `npx prisma db init` | új adatbázison létrehozza a hiányzó táblákat, és aláírja | igen | igen (csak hozzáad) |
-| `npx prisma db update` | az adatbázist a contracthoz igazítja, migrációs fájl nélkül | igen | igen (törölhet is) |
-| `npx prisma db verify` | ellenőrzi, hogy az adatbázis megfelel-e a contractnak | igen | nem |
-| `npx prisma db sign` | ellenőrzi, majd aláírja az adatbázist (a táblákhoz nem nyúl) | igen | csak az aláírást írja |
-| `npx prisma migration plan` | a contract változásából migrációt készít | nem | nem (csak fájlokat ír) |
-| `npx prisma migration status` | megmutatja, mely migrációk várnak még végrehajtásra | igen | nem |
-| `npx prisma db migrate --advance-ref db` | végrehajtja a várakozó migrációkat, és előreléptet a `db` hivatkozást | igen | igen |
+| Parancs                                                       | Röviden                                                               | Csatlakozik az adatbázishoz? | Módosítja az adatbázist?               |
+| ------------------------------------------------------------- | --------------------------------------------------------------------- | ---------------------------- | -------------------------------------- |
+| `npx prisma contract infer --output ./prisma/contract.prisma` | a meglévő adatbázisból contract-fájlt készít                          | igen                         | nem (a `contract.prisma`-t írja felül) |
+| `npx prisma contract emit`                                    | a contractból elkészíti a kód által használt fájlokat                 | nem                          | nem                                    |
+| `npx prisma db init`                                          | új adatbázison létrehozza a hiányzó táblákat, és aláírja              | igen                         | igen (csak hozzáad)                    |
+| `npx prisma db update`                                        | az adatbázist a contracthoz igazítja, migrációs fájl nélkül           | igen                         | igen (törölhet is)                     |
+| `npx prisma db verify`                                        | ellenőrzi, hogy az adatbázis megfelel-e a contractnak                 | igen                         | nem                                    |
+| `npx prisma db sign`                                          | ellenőrzi, majd aláírja az adatbázist (a táblákhoz nem nyúl)          | igen                         | csak az aláírást írja                  |
+| `npx prisma migration plan`                                   | a contract változásából migrációt készít                              | nem                          | nem (csak fájlokat ír)                 |
+| `npx prisma migration status`                                 | megmutatja, mely migrációk várnak még végrehajtásra                   | igen                         | nem                                    |
+| `npx prisma db migrate --advance-ref db`                      | végrehajtja a várakozó migrációkat, és előreléptet a `db` hivatkozást | igen                         | igen                                   |
 
 **`npx prisma contract infer --output ./prisma/contract.prisma`**
 Beolvassa a **meglévő adatbázis** tényleges sémáját, és abból elkészíti a `contract.prisma` fájlt, vagyis fordított irányban dolgozik, mint a többi parancs: nem a contract alapján alakítja az adatbázist, hanem az adatbázis alapján írja meg a contractot. Akkor kell, ha már létező táblákkal kezdesz (pl. egy korábbi projektből). Az `--output` a kimeneti fájl útvonala; ha a fájl már létezik, a parancs figyelmeztetéssel **felülírja**, ezért előbb mentsd vagy commitold a saját contractodat. A parancs itt megáll: a kapott fájlt át kell nézni (típusok, modellnevek, lásd 8. pont), majd külön lépésként jön a `contract emit` és a `db sign`. Az adatbázist nem módosítja.
@@ -914,7 +931,7 @@ Amikor az adatbázis **már jó**, csak a Prisma nem tudja, hogy melyik contract
 Ha az adatbázisból hiányzik valami, amit a contract leír, a `db sign` nem ír alá, hanem hibát ad, pl.:
 
 ```
-[error] missing: database/public/filmek/column:hossz
+[error] missing: database/public/films/column:hossz
 [error] CONTRACT.SCHEMA_VERIFICATION_FAILED: Database schema does not satisfy contract (1 failure)
 ```
 
@@ -922,29 +939,29 @@ Ilyenkor a `db update` kell. Ha fordítva, az adatbázisban van több (pl. egy o
 
 ### Tipikus sorrendek
 
-| Helyzet                                                     | Parancsok                                                                 |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------- |
-| új, üres adatbázis                                          | `prisma contract emit` → `prisma db init`                                 |
-| új mező / modell, fejlesztés közben                         | `prisma contract emit` → `prisma db update`                               |
-| új mező / modell, migrációval                               | `prisma contract emit` → `prisma migration plan --name ...` → `prisma db migrate --advance-ref db` |
-| csak a kódbeli típus változott (pl. `...String` → `...JsDate`) | `prisma contract emit` → `prisma db update` (0 művelet, új aláírás)    |
-| meglévő adatbázis átvétele                                  | `prisma contract infer ...` → (átnézés) → `prisma contract emit` → `prisma db sign` |
-| kézi SQL módosítás után                                     | contract módosítása → `prisma contract emit` → `prisma db sign`           |
-| sablon klónozása után (a `migrations` mappa nélkül)          | `npm install` → `.env` → üres adatbázison `prisma db init`                |
-| ellenőrzés                                                  | `prisma db verify`                                                        |
+| Helyzet                                                        | Parancsok                                                                                          |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| új, üres adatbázis                                             | `prisma contract emit` → `prisma db init`                                                          |
+| új mező / modell, fejlesztés közben                            | `prisma contract emit` → `prisma db update`                                                        |
+| új mező / modell, migrációval                                  | `prisma contract emit` → `prisma migration plan --name ...` → `prisma db migrate --advance-ref db` |
+| csak a kódbeli típus változott (pl. `...String` → `...JsDate`) | `prisma contract emit` → `prisma db update` (0 művelet, új aláírás)                                |
+| meglévő adatbázis átvétele                                     | `prisma contract infer ...` → (átnézés) → `prisma contract emit` → `prisma db sign`                |
+| kézi SQL módosítás után                                        | contract módosítása → `prisma contract emit` → `prisma db sign`                                    |
+| sablon klónozása után (a `migrations` mappa nélkül)            | `npm install` → `.env` → üres adatbázison `prisma db init`                                         |
+| ellenőrzés                                                     | `prisma db verify`                                                                                 |
 
 ## 11. Minta adatok feltöltése (seed) ./prisma/seed.ts
 
-A Prisma 8-ban a kapcsolódó rekordok egy lépésben (beágyazva) még nem hozhatók létre (`posts: { create: [...] }` → `ORM.COLUMN_UNKNOWN` hiba). Előbb a hivatkozott rekordot (a felhasználót) kell létrehozni, utána a hivatkozókat (a bejegyzéseket) az idegen kulccsal (`authorId`). Törléskor fordított a sorrend.
+A Prisma 8-ban a kapcsolódó rekordok egy lépésben (beágyazva) még nem hozhatók létre (`posts: { create: [...] }` → `ORM.COLUMN_UNKNOWN` hiba). Előbb a hivatkozott rekordot (a felhasználót) kell létrehozni, utána a hivatkozókat (a bejegyzéseket) az idegen kulccsal (`authorId`).
 
 ```ts
 import { db } from "./db";
 
 async function main() {
-  // törlés a hivatkozások miatt fordított sorrendben: előbb a posztok, utána a felhasználók
-  await db.orm.public.Post.where({}).deleteAll();
-  await db.orm.public.User.where({}).deleteAll();
-  await db.orm.public.Film.where({}).deleteAll();
+  // minden tábla kiürítése, és az id sorozatok visszaállítása 1-re (nyers SQL, táblanevekkel)
+  await db.query(
+    db.raw.sql`TRUNCATE TABLE posts, users, films RESTART IDENTITY`.affectedCount().build(),
+  );
 
   await db.orm.public.Film.createAll([
     { title: "A Pál utcai fiúk", content: "ifjúsági" },
@@ -970,6 +987,8 @@ main().catch((error) => {
 Futtatás:
 
 > npm run db:seed<br>
+
+**Miért `TRUNCATE` és nem `deleteAll()`?** A `.where({}).deleteAll()` csak a sorokat törli, az `id` sorozat (sequence) ott folytatódik, ahol abbahagyta: a második seed után a filmek id-je már 19–36 lenne, és a `/api/films/1` 404-et adna. A `TRUNCATE ... RESTART IDENTITY` egyszerre üríti ki a táblákat és állítja vissza az id-ket 1-re. Mivel nyers SQL, az adatbázisbeli táblaneveket (`posts`, `users`, `films`) kell használni, és mindhárom táblát egy utasításban kell megadni, mert a `posts` hivatkozik a `users` táblára (külön-külön a `users` kiürítése idegen kulcs hibát adna).
 
 Ellenőrzés (pl. egy végpontban vagy scriptben):
 
@@ -1040,25 +1059,25 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
 
 Gyakori műveletek (Prisma 7 → Prisma 8):
 
-| Prisma 7                                           | Prisma 8                                                                     |
-| -------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `prisma.film.findMany()`                           | `db.orm.public.Film.all()`                                                   |
-| `findMany({ where: { ev: 1968 } })`                | `db.orm.public.Film.where({ ev: 1968 }).all()`                               |
-| `findUnique({ where: { id } })`                    | `db.orm.public.Film.where({ id }).first()` (nincs találat: `null`)           |
-| `orderBy: { title: "asc" }`                        | `.orderBy((f) => f.title.asc())`                                             |
-| `take` / `skip`                                    | `.limit(n)` / `.offset(n)`                                                   |
-| `select: { title: true }`                          | `.select("id", "title")`                                                     |
-| `include: { mufaj: true }`                         | `.include("mufaj")`                                                          |
-| `where: { title: { contains: "egri" } }`           | `.where((f) => f.title.like("%egri%"))`                                      |
-| `create({ data: {...} })`                          | `db.orm.public.Film.create({ ... })` (nincs `data:` csomagolás)              |
-| `createMany({ data: [...] })`                      | `db.orm.public.Film.createAll([...])`                                        |
-| `update({ where: { id }, data: {...} })`           | `db.orm.public.Film.where({ id }).update({ ... })`                           |
-| `delete({ where: { id } })`                        | `db.orm.public.Film.where({ id }).delete()`                                  |
-| `updateMany` / `deleteMany`                        | `.where(...).updateAll({ ... })` / `.where(...).deleteAll()`                 |
-| `count()`                                          | `.aggregate((a) => ({ db: a.count() }))`                                     |
-| hiba `P2002` (egyedi érték ütközés)                | `sqlState === "23505"`                                                       |
-| hiba `P2003` (idegen kulcs)                        | `sqlState === "23503"`                                                       |
-| hiba `P2025` (nincs ilyen rekord)                  | az `update` / `delete` `null`-t ad vissza                                    |
+| Prisma 7                                 | Prisma 8                                                           |
+| ---------------------------------------- | ------------------------------------------------------------------ |
+| `prisma.film.findMany()`                 | `db.orm.public.Film.all()`                                         |
+| `findMany({ where: { ev: 1968 } })`      | `db.orm.public.Film.where({ ev: 1968 }).all()`                     |
+| `findUnique({ where: { id } })`          | `db.orm.public.Film.where({ id }).first()` (nincs találat: `null`) |
+| `orderBy: { title: "asc" }`              | `.orderBy((f) => f.title.asc())`                                   |
+| `take` / `skip`                          | `.limit(n)` / `.offset(n)`                                         |
+| `select: { title: true }`                | `.select("id", "title")`                                           |
+| `include: { mufaj: true }`               | `.include("mufaj")`                                                |
+| `where: { title: { contains: "egri" } }` | `.where((f) => f.title.like("%egri%"))`                            |
+| `create({ data: {...} })`                | `db.orm.public.Film.create({ ... })` (nincs `data:` csomagolás)    |
+| `createMany({ data: [...] })`            | `db.orm.public.Film.createAll([...])`                              |
+| `update({ where: { id }, data: {...} })` | `db.orm.public.Film.where({ id }).update({ ... })`                 |
+| `delete({ where: { id } })`              | `db.orm.public.Film.where({ id }).delete()`                        |
+| `updateMany` / `deleteMany`              | `.where(...).updateAll({ ... })` / `.where(...).deleteAll()`       |
+| `count()`                                | `.aggregate((a) => ({ db: a.count() }))`                           |
+| hiba `P2002` (egyedi érték ütközés)      | `sqlState === "23505"`                                             |
+| hiba `P2003` (idegen kulcs)              | `sqlState === "23503"`                                             |
+| hiba `P2025` (nincs ilyen rekord)        | az `update` / `delete` `null`-t ad vissza                          |
 
 ./tests.http (VS Code REST Client, a projekt gyökerében)
 
@@ -1117,7 +1136,7 @@ DELETE http://localhost:3000/api/filmek/1
 - **`CLI.CONFIG_UNREADABLE ... config loading resolved E:/... instead of e:\...`:** a parancssor (`cmd`) kisbetűs meghajtójellel áll a mappában. Futtasd a parancsot PowerShellből (2.1 pont), vagy lépj be újra nagybetűvel: `cd /d E:\...`.
 - **`Cannot find module 'prisma/config'`:** a `prisma.config.ts`-ben a `definePrismaConfig`-et a `@prisma/cli-engine` csomagból kell importálni (3. pont).
 - **`Cannot find module '.../prisma/contract.json'`:** elmaradt a `prisma contract emit`. A contract minden módosítása után futtatni kell, különben a TypeScript sem látja az új mezőket (a VS Code-ban néha **TypeScript: Restart TS Server** is kell).
-- **`RUNTIME.TEMPORAL_UNAVAILABLE`:** a contractban `JsDate` nélküli dátumtípus (`DateTime`, `Timestamptz`, `Timestamp`) szerepel, lásd 7. pont.
+- **`RUNTIME.TEMPORAL_UNAVAILABLE`:** a contractban `Temporal` dátumtípus (`TimestamptzTemporal`, `DateTemporal`, `DateTime(as: temporal)`) szerepel, lásd 7. pont.
 - **`CLI.UNEXPECTED: Cannot use 'in' operator to search for 'kind' in typeChoice`:** a `prisma` CLI és az `@prisma/orm-postgres` eltérő belső verziót használ. Megoldás: a `package.json` `overrides` bejegyzése (2.4 pont), majd `npm install`.
 - **`PSL_UNRESOLVED_REFERENCE ... was a field preset, and Prisma 8 removed field presets`:** a contractban régi írásmódú dátummező van (`temporal.updatedAtJsDate()`, `temporal.UpdatedAtJsDate`), a hibaüzenet megmondja az új alakot (7. pont).
 - **`DRIVER.CONNECTION_FAILED`:** nem fut a szerver, hibás a `.env`-ben a connection string, vagy nem létezik az adatbázis (a Prisma 8 nem hozza létre). A `why:` sor mondja meg a pontos okot:
