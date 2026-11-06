@@ -12,7 +12,7 @@ Két környezetre készül:
 A kód mindkét esetben ugyanaz, csak a `.env` állományban lévő connection string különbözik.
 
 > [!IMPORTANT]
-> **A Prisma 8 jelenleg release candidate.** 2026 novemberében `prisma@8.0.0-rc.29` (parancssori eszköz) és `@prisma/orm-postgres@8.0.0-rc.22` (könyvtár), a végleges kiadás hamarosan várható. Mivel az RC-k között az írásmód is változhat (lásd 7. pont: dátummezők), a sablon a Prisma- és a Next.js-csomagokat **pontos verzióra rögzíti** (`^` nélkül, lásd 2.2). A PostgreSQL-támogatás a legérettebb része, de a végleges kiadásig az API kis mértékben még változhat.
+> **A Prisma 8 jelenleg release candidate.** 2026 novemberében `prisma@8.0.0-rc.33` (parancssori eszköz) és `@prisma/orm-postgres@8.0.0-rc.23` (könyvtár), a végleges kiadás hamarosan várható. Mivel az RC-k között az írásmód is változhat (lásd 7. pont: dátummezők), a sablon a Prisma- és a Next.js-csomagokat **pontos verzióra rögzíti** (`^` nélkül, lásd 2.2). A PostgreSQL-támogatás a legérettebb része, de a végleges kiadásig az API kis mértékben még változhat.
 >
 > Követelmények:
 >
@@ -68,25 +68,23 @@ A parancssorban (`cmd`) ez akkor fordul elő, ha a mappába kisbetűvel lépsz b
 
 > npm i -D prettier typescript-eslint tsx<br>
 > npx prisma@latest orm init --yes --target postgres --authoring psl --schema-path prisma/contract.prisma --write-env<br>
-> npm i -E -D prisma@8.0.0-rc.29 @prisma/cli-engine@0.9.0<br>
-> npm i -E @prisma/orm-postgres@8.0.0-rc.22<br>
-> npm pkg set overrides.@prisma/orm-toolchain=8.0.0-rc.22<br>
-> npm install<br>
-> npm install-scripts deny esbuild unrs-resolver workerd<br>
+> npm i -E -D prisma@8.0.0-rc.33 @prisma/cli-engine@0.9.0<br>
+> npm i -E @prisma/orm-postgres@8.0.0-rc.23<br>
+> npm install-scripts deny esbuild unrs-resolver<br>
 
-**Pontos verziók.** A Prisma 8 RC-i között nemcsak hibajavítások, hanem írásmód-változások is vannak (pl. a dátummezőknél, 7. pont). A `^` jel (pl. `^8.0.0-rc.22`) megengedné, hogy egy későbbi `npm install` magától újabb RC-t telepítsen, és a contract váratlanul hibás legyen. Ezért ez az öt csomag **pontos verzión** (`^` nélkül) szerepel a `package.json`-ban:
+**Pontos verziók.** A Prisma 8 RC-i között nemcsak hibajavítások, hanem írásmód-változások is vannak (pl. a dátummezőknél, 7. pont). A `^` jel (pl. `^8.0.0-rc.23`) megengedné, hogy egy későbbi `npm install` magától újabb RC-t telepítsen, és a contract váratlanul hibás legyen. Ezért ez az öt csomag **pontos verzión** (`^` nélkül) szerepel a `package.json`-ban:
 
 | Csomag | Verzió | Miért rögzített? |
 | ------ | ------ | ---------------- |
-| `prisma` | `8.0.0-rc.29` | release candidate, az RC-k között változhat az írásmód |
-| `@prisma/orm-postgres` | `8.0.0-rc.22` | release candidate, a `prisma` CLI-vel együtt kell frissíteni |
+| `prisma` | `8.0.0-rc.33` | release candidate, az RC-k között változhat az írásmód |
+| `@prisma/orm-postgres` | `8.0.0-rc.23` | release candidate, a `prisma` CLI-vel együtt kell frissíteni |
 | `@prisma/cli-engine` | `0.9.0` | a `prisma.config.ts` ebből importál, a CLI-vel együtt kell frissíteni |
-| `next` | `16.4.3` | a `create-next-app` eleve pontos verzióval telepíti |
-| `eslint-config-next` | `16.4.3` | a `next`-tel azonos verziónak kell lennie |
+| `next` | `16.4.4` | a `create-next-app` eleve pontos verzióval telepíti |
+| `eslint-config-next` | `16.4.4` | a `next`-tel azonos verziónak kell lennie |
 
-Az `-E` (`--save-exact`) kapcsoló írja a pontos verziót a `package.json`-ba (az `orm init` `^`-jellel telepít, ezért kell újra telepíteni a három Prisma-csomagot). A többi csomag (`dotenv`, `prettier`, `tsx`, `typescript` stb.) maradhat `^`-jellel. Frissíteni a Prisma-csomagokat tudatosan, együtt érdemes, szintén `-E`-vel (pl. `npm i -E -D prisma@latest`, `npm i -E @prisma/orm-postgres@latest`), utána az `overrides` verzióját az `@prisma/orm-postgres` verziójához kell igazítani, majd `npx prisma contract emit` és ellenőrzés.
+Az `-E` (`--save-exact`) kapcsoló írja a pontos verziót a `package.json`-ba (az `orm init` `^`-jellel telepít, ezért kell újra telepíteni a három Prisma-csomagot). A többi csomag (`dotenv`, `prettier`, `tsx`, `typescript` stb.) maradhat `^`-jellel.
 
-**Az `overrides` sor** a `prisma` CLI és az `@prisma/orm-postgres` közötti verzióeltérést javítja, lásd 2.4.
+**Frissítés.** A Prisma-csomagokat tudatosan, együtt érdemes frissíteni, szintén `-E`-vel (pl. `npm i -E -D prisma@latest`, `npm i -E @prisma/orm-postgres@latest`). Előtte érdemes megnézni, hogy a két csomag ugyanazt a belső `@prisma/orm-toolchain` verziót használja-e (lásd 2.4), utána pedig `npx prisma contract emit` és ellenőrzés (`npm ls @prisma/orm-framework`, `npx tsc --noEmit`, `npm run build`).
 
 A csomagok:
 
@@ -113,7 +111,7 @@ Az `orm init` a következőket végzi el:
 
 A `prisma` CLI a projekt fejlesztői függősége, ezért a parancsokat `npx prisma ...` alakban (vagy a `package.json` scriptjeivel, `npm run ...`) kell futtatni, internet nélkül is működnek. A VS Code Prisma bővítménye is a projekt `node_modules/prisma` mappájából indítja a Prisma 8 nyelvi szerverét (IntelliSense, formázás, hibajelzés a `contract.prisma`-ban).
 
-A Prisma 8 CLI magával hozza a Prisma felhős alkalmazás-telepítő eszközét (Prisma Composer) is, ezért a `node_modules` mappa kb. 135 000 fájlból áll (a Prisma 7-nél kb. 30 000 volt). A futó alkalmazás ebből semmit nem használ, csak az `@prisma/orm-postgres` könyvtárat.
+A Prisma 8 CLI magával hozza a Prisma felhős alkalmazás-telepítő eszközét (Prisma Composer) is. A korábbi RC-knél emiatt a `node_modules` mappa kb. 135 000 fájlból állt, a `prisma@8.0.0-rc.33` óta már csak kb. 32 000-ből (a Prisma 7-nél kb. 30 000 volt). A futó alkalmazás ebből semmit nem használ, csak az `@prisma/orm-postgres` könyvtárat.
 
 **Ellenőrzés:** a `prisma` mappában legyen ott a `contract.json` és a `contract.d.ts`. Ha hiányoznak, a `prisma/db.ts` importjai hibát jeleznek (`Cannot find module './contract.d'`, `Cannot find module './contract.json'`). Ilyenkor futtasd le:
 
@@ -124,39 +122,46 @@ A Prisma 8 CLI magával hozza a Prisma felhős alkalmazás-telepítő eszközét
 Az npm 11 minden telepítésnél figyelmeztet azokra a csomagokra, amelyek telepítéskor scriptet futtatnának, de nincs róluk döntés:
 
 ```
-npm warn allow-scripts 3 packages have install scripts not yet covered by allowScripts:
+npm warn allow-scripts 2 packages have install scripts not yet covered by allowScripts:
 npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
-npm warn allow-scripts   unrs-resolver@1.12.2 (postinstall: node postinstall.js)
-npm warn allow-scripts   workerd@1.20261002.1 (postinstall: node install.js)
+npm warn allow-scripts   unrs-resolver@1.13.0 (postinstall: node postinstall.js)
 ```
 
-A 2.2 pont utolsó parancsa (`npm install-scripts deny esbuild unrs-resolver workerd`) erről dönt: letiltja a scriptek futtatását, és a döntést a `package.json`-ba írja, így a figyelmeztetés többet nem jelenik meg:
+A 2.2 pont utolsó parancsa (`npm install-scripts deny esbuild unrs-resolver`) erről dönt: letiltja a scriptek futtatását, és a döntést a `package.json`-ba írja, így a figyelmeztetés többet nem jelenik meg:
 
 ```json
 "allowScripts": {
   "esbuild": false,
-  "unrs-resolver": false,
-  "workerd": false
+  "unrs-resolver": false
 }
 ```
 
-Egyik script sem kell a működéshez: az `esbuild` (ezt a `tsx` használja) és az `unrs-resolver` (ezt az `eslint-config-next` használja) a platformnak megfelelő binárisát külön csomagként kapja meg, a script csak ellenőrzi. A `workerd` (Cloudflare futtatókörnyezet) a Prisma CLI felhős telepítő részéhez (Prisma Composer) kell, a `contract emit`, `db ...` és `migration ...` parancsok nem használják. Kipróbálva: a `tsx`, az ESLint és a `next build` a letiltás után is működik. A függőben lévő csomagok listája: `npm install-scripts ls`. Ha később új csomag kerül a listára, ugyanígy dönthetsz róla (`approve` = engedélyez, `deny` = letilt).
+Egyik script sem kell a működéshez: az `esbuild` (ezt a `tsx` használja) és az `unrs-resolver` (ezt az `eslint-config-next` használja) a platformnak megfelelő binárisát külön csomagként kapja meg, a script csak ellenőrzi. A korábbi Prisma CLI verziók (rc.33 előtt) a `workerd` csomagot (Cloudflare futtatókörnyezet) is telepítették, ezt is le kellett tiltani. A `deny` csak telepített csomagra működik, nem telepítettre `ENOMATCH` hibát ad, ezért mindig az `npm install-scripts ls` által listázott csomagokat add meg. Kipróbálva: a `tsx`, az ESLint és a `next build` a letiltás után is működik. A függőben lévő csomagok listája: `npm install-scripts ls`. Ha később új csomag kerül a listára, ugyanígy dönthetsz róla (`approve` = engedélyez, `deny` = letilt).
 
-### 2.4 További telepítési figyelmeztetések, verzióeltérés (ERESOLVE, vulnerabilities, overrides)
+### 2.4 További telepítési figyelmeztetések, verzióeltérés (ERESOLVE, vulnerabilities)
 
-**`CLI.UNEXPECTED: Cannot use 'in' operator to search for 'kind' in typeChoice`** (a `prisma contract emit`, és vele a `postinstall` és a `build` futásakor): a `prisma` CLI és az `@prisma/orm-postgres` könyvtár nem illik össze. A `prisma@8.0.0-rc.29` a saját belső részeit (`@prisma/orm-toolchain`, `@prisma/orm-framework`) a 8.0.0-rc.21-es verzión rögzíti, az `@prisma/orm-postgres@8.0.0-rc.22` viszont rc.22-t használ, így a projektbe mindkettő bekerül, és a kettő nem érti egymás adatait. A `package.json` `overrides` bejegyzése a CLI-t is az rc.22-re kényszeríti, így egyetlen verzió marad:
+**`CLI.UNEXPECTED: Cannot use 'in' operator to search for 'kind' in typeChoice`** (a `prisma contract emit`, és vele a `postinstall` és a `build` futásakor): a `prisma` CLI és az `@prisma/orm-postgres` könyvtár nem illik össze, mert eltérő belső `@prisma/orm-toolchain` / `@prisma/orm-framework` verziót használnak. Ilyenkor a projektbe mindkettő bekerül, és a kettő nem érti egymás adatait. Ez pl. a `prisma@8.0.0-rc.29` (belül rc.21) és az `@prisma/orm-postgres@8.0.0-rc.22` párosnál fordult elő. A jelenlegi `prisma@8.0.0-rc.33` és `@prisma/orm-postgres@8.0.0-rc.23` ugyanazt a belső verziót (rc.23) használja, így nincs ilyen gond.
+
+Frissítés előtt így ellenőrizhető, hogy a két csomag illik-e össze (a két sorban ugyanaz a verzió szerepeljen):
+
+```powershell
+npm view prisma@latest dependencies --json | Select-String orm-toolchain
+npm view @prisma/orm-postgres@latest dependencies --json | Select-String orm-toolchain
+```
+
+Telepítés után: `npm ls @prisma/orm-framework` – csak egyféle verziószám szerepeljen. Ha mégis eltérnek, a `package.json`-ban egy `overrides` bejegyzés a CLI-t is a könyvtár verziójára kényszeríti (utána `npm install`):
 
 ```json
 "overrides": {
-  "@prisma/orm-toolchain": "8.0.0-rc.22"
+  "@prisma/orm-toolchain": "<az @prisma/orm-postgres verziója>"
 }
 ```
 
-Ellenőrzés: `npm ls @prisma/orm-framework` – csak egyféle verziószám szerepeljen. Frissítéskor az `overrides` verzióját az `@prisma/orm-postgres` verziójához kell igazítani; ha a `prisma` CLI egy későbbi verziója már ugyanazt használja, a bejegyzés törölhető.
+Ha a két csomag később ismét ugyanazt a verziót használja, az `overrides` bejegyzést törölni kell (`npm pkg delete overrides`), különben egy régebbi belső verziót kényszerítene a projektbe.
 
 **`npm warn ERESOLVE overriding peer dependency ... @effect/vitest ... effect`:** a Prisma CLI korábbi verzióinál a felhős telepítő rész (Prisma Composer) belső függőségei között volt egy verzióütközés (az `alchemy` újabb `@effect/vitest`-et kért, mint amilyen `effect` verziót a Composer rögzített). Az npm feloldotta, ezért csak figyelmeztetés volt, és egy `overrides` bejegyzés a `package.json`-ban eltüntette. A `prisma@8.0.0-rc.27` óta már nem jelentkezik, ezért a bejegyzés törölve lett. Ha egy későbbi verziónál mégis előjönne a figyelmeztetés, az `"overrides": { "@effect/vitest": "<a Composer által kért verzió>" }` bejegyzéssel ismét elnémítható.
 
-**`13 vulnerabilities (5 moderate, 8 high)`:** mind a 13 fejlesztői eszközök függőségeiből jön, amelyeket csak fejlesztés közben, a saját gépen használunk: a `prisma` parancssori eszközéből (Prisma Composer: `alchemy`, `@prisma/composer`, `@prisma/dev`, `hono`; sémaelemző: `chevrotain`, `lodash`, `valibot`) és az `eslint-config-next`-ből (`@next/eslint-plugin-next`, `fast-glob`, `micromatch`, `braces`). A futó alkalmazás függőségeiben (`next`, `@prisma/orm-postgres`, `dotenv`) nincs sérülékenység, ez így ellenőrizhető:
+**`12 moderate severity vulnerabilities`** (a `prisma@8.0.0-rc.33` és a `next@16.4.4` mellett): mind a 12 közepes súlyosságú, és fejlesztői eszközök függőségeiből jön, amelyeket csak fejlesztés közben, a saját gépen használunk: a `prisma` parancssori eszközéből (`@prisma/compute-sdk`, `@vercel/nft`, `glob`) és az ESLint-csomagokból (`eslint-config-next`, `typescript-eslint` és `@typescript-eslint/*`, `minimatch`). A korábbi RC-knél még 13 volt, ebből 8 magas súlyosságú. A futó alkalmazás függőségeiben (`next`, `@prisma/orm-postgres`, `dotenv`) nincs sérülékenység, ez így ellenőrizhető:
 
 ```powershell
 npm audit --omit=dev
@@ -167,7 +172,7 @@ found 0 vulnerabilities
 ```
 
 > [!WARNING]
-> Az `npm audit fix --force` parancsot **ne** futtasd: a "javítás" a `prisma` csomagot a 7-es verzióra állítaná vissza (`fix: prisma@7.10.0`), amely nem ismeri a Prisma 8 contractot. A figyelmeztetések a Prisma 8 végleges kiadásával, a Prisma CLI frissítésekor várhatóan eltűnnek (`npm i -D prisma@latest`).
+> Az `npm audit fix --force` parancsot **ne** futtasd: a "javítás" a `prisma` csomagot a 7-es verzióra (`fix: prisma@7.10.1`), az `eslint-config-next`-et pedig a Next.js 15-ös verziójához tartozóra (`fix: eslint-config-next@15.5.29`) állítaná vissza, ami a projektet elrontaná. A figyelmeztetések a Prisma 8 végleges kiadásával, a Prisma CLI frissítésekor várhatóan eltűnnek (`npm i -D prisma@latest`).
 
 ## 3. Prisma konfigurálása: ./prisma.config.ts
 
