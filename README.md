@@ -415,6 +415,8 @@ A `package.json` scriptjei:
   "db:sign": "prisma db sign",
   "db:seed": "tsx prisma/seed.ts",
   "db:setup": "prisma contract emit && prisma db init && tsx prisma/seed.ts",
+  "db:infer1": "npx prisma contract infer --output ./prisma/contract.prisma",
+  "db:infer2": "npx prisma contract emit && npx prisma db sign",
   "migration:plan": "prisma migration plan",
   "migration:status": "prisma migration status",
   "migrate": "prisma db migrate --advance-ref db"
@@ -774,6 +776,16 @@ A parancs felülírja a megadott contractot. A Prisma 7-es `db pull`-hoz képest
 > npx prisma db sign<br>
 
 A `db sign` ellenőrzi, hogy az adatbázis megfelel-e a contractnak, és aláírja (a táblák nem változnak). Ezután a migrációk a 9. pont szerint működnek.
+
+**Scriptekkel:** a két lépés a `package.json` scriptjeivel is futtatható, a kettő között a contract átnézése és javítása következik:
+
+> npm run db:infer1<br>
+> npm run db:infer2<br>
+
+| Script      | Mit futtat?                                                   |
+| ----------- | ------------------------------------------------------------- |
+| `db:infer1` | `npx prisma contract infer --output ./prisma/contract.prisma` |
+| `db:infer2` | `npx prisma contract emit && npx prisma db sign`              |
 
 Figyelj a típusokra, mielőtt emitálsz:
 

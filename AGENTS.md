@@ -35,6 +35,8 @@ This is a **Next.js 16 REST API starter** (App Router route handlers, no UI) usi
 | `npm run db:verify` / `npm run db:sign`                       | check / record that the database matches the contract                                          |
 | `npm run db:seed`                                             | run `prisma/seed.ts` (**deletes and refills** all tables)                                      |
 | `npm run db:setup`                                            | emit + init + seed                                                                             |
+| `npm run db:infer1`                                           | existing database → contract (`contract infer`, **overwrites** `prisma/contract.prisma`)       |
+| `npm run db:infer2`                                           | after reviewing the inferred contract: `contract emit` + `db sign` (does not change tables)    |
 | `npm run migration:plan -- --name <name>` / `npm run migrate` | plan / apply a migration                                                                       |
 
 ## Secrets
@@ -60,6 +62,7 @@ prisma.config.ts        Prisma CLI config
 ## The contract (`prisma/contract.prisma`)
 
 - The **first line must be `// use prisma-8`**, otherwise `contract emit` fails.
+- **Format `prisma/contract.prisma` with the Prisma VS Code extension** (`Prisma.prisma`), not Prettier. `.vscode/settings.json` sets `"[prisma]": { "editor.defaultFormatter": "Prisma.prisma" }` with format on save. When you edit the contract, follow the extension's layout (aligned columns, one attribute block per line) so that the next format on save produces no diff.
 - There is no `datasource` / `generator` block.
 - Native PostgreSQL types go in the type position: `VarChar(200)`, `SmallInt`, `Numeric(8, 2)`, not `String @db.VarChar(200)`.
 - Use `@@map("table_name")` and `@map("column_name")` for database names (tables are plural, e.g. `@@map("films")`).
@@ -146,7 +149,7 @@ Follow the existing examples and the `.vscode/react-next.code-snippets`:
 ## Code style
 
 - TypeScript, ES modules (`"type": "module"`), `@/` import alias for the project root.
-- Prettier: double quotes, semicolons, trailing commas, 2 spaces, print width 100. ESLint: `eslint.config.mjs`.
+- Prettier: double quotes, semicolons, trailing commas, 2 spaces, print width 100 (`.prisma` files: the Prisma extension, see above). ESLint: `eslint.config.mjs`.
 - Keep comments short; the existing code comments are in Hungarian, match the surrounding style.
 
 ## Before finishing a change

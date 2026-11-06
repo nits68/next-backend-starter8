@@ -1,19 +1,19 @@
 // use prisma-8
 // Contract inferred from the live database schema. Edit as needed, then run `prisma contract emit`.
 model Film {
-  id        Int                        @id() @default(autoincrement())
+  id        Int               @id() @default(autoincrement())
   content   String
-  createdAt TimestamptzJsDate          @default(now())
-  title     String                     @unique()
+  createdAt TimestamptzJsDate @default(now())
+  title     String            @unique()
   updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now())
 
   @@map("films")
 }
 
 model User {
-  id        Int                        @id() @default(autoincrement())
-  createdAt TimestamptzJsDate          @default(now())
-  email     String                     @unique()
+  id        Int               @id() @default(autoincrement())
+  createdAt TimestamptzJsDate @default(now())
+  email     String            @unique()
   name      String?
   updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now())
   username  String?
@@ -23,13 +23,13 @@ model User {
 }
 
 model Post {
-  id        Int                        @id() @default(autoincrement())
+  id        Int               @id() @default(autoincrement())
   authorId  Int
   content   String?
-  createdAt TimestamptzJsDate          @default(now())
+  createdAt TimestamptzJsDate @default(now())
   title     String
   updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now())
-  author    User                       @relation(fields:[authorId], references:[id], map: "posts_authorId_fkey")
+  author    User              @relation(fields: [authorId], references: [id], map: "posts_authorId_fkey")
 
   @@index([authorId])
   @@map("posts")
