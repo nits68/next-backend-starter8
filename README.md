@@ -587,19 +587,20 @@ Ha ugyanazon a gépen a telepített (6.1) PostgreSQL szolgáltatás is fut, a ke
 
 1. Regisztráció a [neon.com](https://neon.com) oldalon (GitHub vagy Google fiókkal is lehet), majd új projekt létrehozása (régió: pl. `AWS Europe Central (Frankfurt)`). A Neon a `neondb` adatbázist automatikusan létrehozza.
 2. A projekt **Dashboard** oldalán a **Connect** gombbal nyílik meg a connection string. A **Connection pooling** kapcsolóval a pooled (a hosztnévben `-pooler` szerepel) és a direkt változat között lehet váltani.
-3. A `.env`-be mindkettő kerüljön: a program a pooled kapcsolatot használja (`DATABASE_URL`), a Prisma CLI (migrációk, `contract infer`) a direkt kapcsolatot (`DIRECT_URL`):
+3. A `.env`-be mindkét változóba a **direkt** (`-pooler` nélküli) cím kerüljön: a program a `DATABASE_URL`-t, a Prisma CLI (migrációk, `contract infer`) a `DIRECT_URL`-t használja:
 
 ```
 # --- Helyi PostgreSQL (vizsga) ---
 # DATABASE_URL="postgresql://postgres:jelszo@localhost:5432/mydb"
 
 # --- Neon ---
-DATABASE_URL="postgresql://neondb_owner:<JELSZÓ>@<SAJÁT-VÉGPONT>-pooler.c-5.eu-central-1.aws.neon.tech/neondb?sslmode=verify-full&channel_binding=require"
+DATABASE_URL="postgresql://neondb_owner:<JELSZÓ>@<SAJÁT-VÉGPONT>.c-5.eu-central-1.aws.neon.tech/neondb?sslmode=verify-full&channel_binding=require"
 DIRECT_URL="postgresql://neondb_owner:<JELSZÓ>@<SAJÁT-VÉGPONT>.c-5.eu-central-1.aws.neon.tech/neondb?sslmode=verify-full&channel_binding=require"
 ```
 
 - A `<JELSZÓ>` és a `<SAJÁT-VÉGPONT>` helyére a Neon **Connect** ablakából másolt értékek kerülnek. A végpont neve `ep-`-vel kezdődik (pl. `ep-rapid-shape-b1h8o5g5`), a régió része (`c-5.eu-central-1`) is projektenként eltérhet. Ha a helyőrző benne marad, a Neon félrevezető módon `password authentication failed` hibát ad.
-- A két URL-ben **csak a hostnév `-pooler` része különbözik**, minden más egyezzen, az adatbázis neve (`/neondb`) is. Ha a `/neondb` kimarad, a hiba: `database "neondb_owner" does not exist` (a `pg` driver ilyenkor a felhasználónevet használja adatbázisnévként).
+- **Miért nem a pooled cím?** A Prisma 8 (rc.23-tól) minden kapcsolódáskor `DateStyle=ISO` és `lc_monetary=C` beállítást küld, a Neon pooled kapcsolata (PgBouncer) viszont az `lc_monetary`-t nem fogadja el, így a program (és a seed) ezzel a hibával áll le: `unsupported startup parameter in options: lc_monetary. Please use unpooled connection` (`CONTRACT.MARKER_READ_FAILED`). A direkt kapcsolat ezt elfogadja; fejlesztéshez és órai munkához bőven elég (az ingyenes csomagban is több mint 100 egyidejű kapcsolat). A pooled cím a hosztnévben `-pooler` részt tartalmaz, ezt ne használd.
+- Az URL-ben az adatbázis neve (`/neondb`) se maradjon ki. Ha a `/neondb` kimarad, a hiba: `database "neondb_owner" does not exist` (a `pg` driver ilyenkor a felhasználónevet használja adatbázisnévként).
 - A Neon által adott URL-ekben `sslmode=require` áll. A `verify-full` értékkel eltűnik a `pg` driver `SECURITY WARNING` figyelmeztetése (a biztonság nem változik, a `pg` a `require`-t eddig is így kezelte). A Prisma 8 CLI is a `pg` drivert használja, ezért a `DIRECT_URL`-ben is írható. Ha ott mégis gondot okozna, a `require` is működik (csak a figyelmeztetés jelenik meg).
 - A tétlenség miatt leállt Neon adatbázis újraindulása néhány másodpercig tart, ez külön beállítás nélkül is belefér: a Prisma 8 CLI (`pg` driver) alapból időkorlát nélkül, a program kliense 20 másodpercig vár a kapcsolatra. A Prisma 7-nél használt `connect_timeout` URL-paramétert a Prisma 8 nem veszi figyelembe, ezért nem kell (ha benne marad, nem árt).
 - A két környezet között mindig a **teljes blokkot** kommentezd ki/be. Ha a `DIRECT_URL` a Neonra, a `DATABASE_URL` a helyi szerverre mutat, a migrációk a Neonra, a program a helyi adatbázisra kerül. Üres `DIRECT_URL=""` sor se maradjon, mert azt a config nem cseréli le a `DATABASE_URL`-re.
@@ -660,6 +661,15 @@ DIRECT_URL="postgresql://postgres.<PROJEKT-AZONOSÍTÓ>:<JELSZÓ>@aws-0-<RÉGIÓ
 
 Az adatok a Supabase Dashboard **Table Editor** és **SQL Editor** nézetében is kezelhetők.
 
+**Sorszintű biztonság (RLS):** a Supabase az új táblákon automatikusan bekapcsolja az RLS-t, mert a `public` séma táblái a Supabase Data API-n (a nyilvános `anon` kulccsal) is elérhetők, és RLS nélkül bárki olvashatná, módosíthatná őket. Ezért a sablon contractjában minden modellen ott a `@@rls` (7. pont). Szabályok (policy) nélkül a Data API felől minden tiltva van, a mi alkalmazásunk viszont a táblák tulajdonosaként csatlakozik, így neki minden megengedett. Ha a contractból hiányzik a `@@rls`, a `db init` ezzel a hibával áll le:
+
+```
+✘ [MIGRATION.PLANNING_FAILED] Migration planning failed
+  why: Operation "Disable row-level security on "films"" requires class "widening", but policy allows only: additive
+```
+
+Megoldás: a modellekre `@@rls` (a sablonban már benne van), majd `npm run contract:emit` és újra `npm run db:setup` (vagy ha a táblák már léteznek: `npm run db:init`). Az RLS-t **ne kapcsold ki** a Supabase-en (és a `db update`-tel se), mert akkor a táblák a nyilvános kulccsal elérhetővé válnak.
+
 ## 7. Prisma contract létrehozása (minta modellek) ./prisma/contract.prisma
 
 Három minta modell: `User` és `Post` (egy-a-többhöz kapcsolattal: egy felhasználónak több bejegyzése lehet), valamint a kapcsolat nélküli `Film`. Az `orm init` a `User` és `Post` modellt szöveges dátumtípusokkal hozza létre, ezeket írd át a `JsDate`-es típusokra, hogy mindhárom modellben egyformán `Date` objektumként kapd a dátumokat:
@@ -677,6 +687,7 @@ model User {
   updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
 
   @@map("users")
+  @@rls
 }
 
 model Post {
@@ -689,6 +700,7 @@ model Post {
   updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
 
   @@map("posts")
+  @@rls
 }
 
 model Film {
@@ -699,6 +711,7 @@ model Film {
   updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
 
   @@map("films")
+  @@rls
 }
 ```
 
@@ -716,6 +729,7 @@ További tudnivalók:
 - A `@unique`-ból valódi `UNIQUE` megszorítás lesz az adatbázisban.
 - A kódban a modellek elérése: `db.orm.public.User`, `db.orm.public.Post`, `db.orm.public.Film` (`public` a PostgreSQL séma neve).
 - A `@@map("users")` a tábla nevét adja meg (a modell neve `User`, a táblaé `users`).
+- A `@@rls` bekapcsolja a táblán a sorszintű biztonságot (row-level security, RLS). Szabály (policy) nélkül ez mindent tilt az olyan felhasználóknak, akik nem a tábla tulajdonosai; a mi alkalmazásunk a táblák tulajdonosaként (azzal a felhasználóval, amelyik a `db init`-tel létrehozta őket) csatlakozik, rá az RLS nem vonatkozik, így a programban nem okoz változást. A **Supabase** miatt kell: ott az új táblákon az RLS automatikusan bekapcsol, és `@@rls` nélkül a `db init` ki akarná kapcsolni (`MIGRATION.PLANNING_FAILED ... Disable row-level security`), lásd 6.5. Helyi szerveren és Neonon sem árt. Ha egy már meglévő (korábban `@@rls` nélkül létrehozott) adatbázist használsz, futtasd le egyszer a `npm run db:update`-et: ez csak bekapcsolja az RLS-t a táblákon, az adatokhoz nem nyúl.
 - A `@map("created_at")` az oszlop nevét adja meg: a kódban a mező `createdAt` (camelCase), az adatbázisban az oszlop `created_at` (snake_case). `@map` nélkül az oszlop neve is `createdAt` lenne, amit a PostgreSQL-ben minden kézzel írt SQL-ben idézőjelbe kellene tenni (`SELECT "createdAt" FROM users`), mert az idézőjel nélküli neveket kisbetűsre alakítja. A `snake_case` oszlopnév idézőjel nélkül is működik, és a `contract infer` is ezt a párosítást adja vissza.
 - Egy már meglévő adatbázisban az oszlop átnevezését (`@map` hozzáadása vagy módosítása) a Prisma nem ismeri fel átnevezésként: a `db update` törölné a régi oszlopot és újat hozna létre, az adatok elvesznének. A sablonnál ilyenkor egyszerűbb a táblákat törölni (pl. pgAdminban: `DROP TABLE posts, users, films;`), majd `npm run db:setup`: a `db init` újra létrehozza a táblákat és felülírja a régi aláírást, a seed pedig újratölti az adatokat.
 
@@ -1136,6 +1150,8 @@ DELETE http://localhost:3000/api/filmek/1
 - **`CLI.CONFIG_UNREADABLE ... config loading resolved E:/... instead of e:\...`:** a parancssor (`cmd`) kisbetűs meghajtójellel áll a mappában. Futtasd a parancsot PowerShellből (2.1 pont), vagy lépj be újra nagybetűvel: `cd /d E:\...`.
 - **`Cannot find module 'prisma/config'`:** a `prisma.config.ts`-ben a `definePrismaConfig`-et a `@prisma/cli-engine` csomagból kell importálni (3. pont).
 - **`Cannot find module '.../prisma/contract.json'`:** elmaradt a `prisma contract emit`. A contract minden módosítása után futtatni kell, különben a TypeScript sem látja az új mezőket (a VS Code-ban néha **TypeScript: Restart TS Server** is kell).
+- **`MIGRATION.PLANNING_FAILED` … `Disable row-level security on "..." requires class "widening"`** (Supabase): a táblákon be van kapcsolva az RLS, a contractban nincs. Megoldás: `@@rls` a modellekre, lásd 6.5.
+- **`CONTRACT.MARKER_READ_FAILED` … `unsupported startup parameter in options: lc_monetary`** (Neon, a program vagy a seed futásakor): a `DATABASE_URL` a pooled (`-pooler`) címre mutat. A Prisma 8 rc.23 olyan kapcsolódási beállítást küld, amelyet a pooler nem fogad el; használd a direkt címet (6.3). Ha más szolgáltatónál (pl. a Supabase Transaction poolerével) jön ugyanez, ott is a pooler nélküli, illetve Session módú címet kell a `DATABASE_URL`-be írni.
 - **`RUNTIME.TEMPORAL_UNAVAILABLE`:** a contractban `Temporal` dátumtípus (`TimestamptzTemporal`, `DateTemporal`, `DateTime(as: temporal)`) szerepel, lásd 7. pont.
 - **`CLI.UNEXPECTED: Cannot use 'in' operator to search for 'kind' in typeChoice`:** a `prisma` CLI és az `@prisma/orm-postgres` eltérő belső verziót használ. Megoldás: a `package.json` `overrides` bejegyzése (2.4 pont), majd `npm install`.
 - **`PSL_UNRESOLVED_REFERENCE ... was a field preset, and Prisma 8 removed field presets`:** a contractban régi írásmódú dátummező van (`temporal.updatedAtJsDate()`, `temporal.UpdatedAtJsDate`), a hibaüzenet megmondja az új alakot (7. pont).

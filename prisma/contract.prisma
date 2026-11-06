@@ -8,6 +8,7 @@ model Film {
   updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
 
   @@map("films")
+  @@rls
 }
 
 model User {
@@ -20,6 +21,7 @@ model User {
   posts     Post[]
 
   @@map("users")
+  @@rls
 }
 
 model Post {
@@ -29,8 +31,10 @@ model Post {
   createdAt TimestamptzJsDate @default(now()) @map("created_at")
   title     String
   updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
+
   author    User              @relation(fields: [authorId], references: [id], map: "posts_author_id_fkey")
 
   @@index([authorId])
   @@map("posts")
+  @@rls
 }

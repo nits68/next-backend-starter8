@@ -43,7 +43,7 @@ This is a **Next.js 16 REST API starter** (App Router route handlers, no UI) usi
 
 - **Never read, print, modify or commit `.env`.** It holds real database passwords. Only `.env.example` (placeholders like `<JELSZÓ>`, `<SAJÁT-VÉGPONT>`) is committed.
 - Never put connection strings, passwords or API keys into source files, docs, commit messages or terminal output.
-- `DATABASE_URL` is used by the app; `DIRECT_URL` (if set) by the Prisma CLI (`prisma.config.ts`).
+- `DATABASE_URL` is used by the app; `DIRECT_URL` (if set) by the Prisma CLI (`prisma.config.ts`). On Neon both must be the direct (non `-pooler`) URL: since rc.23 the runtime sends the startup option `lc_monetary=C`, which the Neon pooler rejects (`unsupported startup parameter in options: lc_monetary`).
 
 ## Project layout
 
@@ -77,6 +77,7 @@ updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
 Do not use `@updatedAt`, `temporal.updatedAtJsDate()` or `temporal.UpdatedAtJsDate` (removed in rc.22).
 
 - Relations: `author User @relation(fields: [authorId], references: [id])` + `authorId Int`, and the back relation `posts Post[]`.
+- Every model has `@@rls` (row-level security on, no policies). Keep it and add it to new models: Supabase enables RLS on new tables automatically, and without `@@rls` `db init` fails with `MIGRATION.PLANNING_FAILED ... Disable row-level security ... requires class "widening"`. The app connects as the table owner, so RLS does not affect it. Never disable RLS on Supabase (the tables would become readable/writable with the public anon key).
 - After **every** contract change: `npm run contract:emit`, then `npm run db:update` (dev) or `migration:plan` + `migrate`.
 
 ## Database access (Prisma 8 query API)
