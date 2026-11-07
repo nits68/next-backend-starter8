@@ -79,8 +79,8 @@ A parancssorban (`cmd`) ez akkor fordul elő, ha a mappába kisbetűvel lépsz b
 | `prisma`               | `8.0.0-rc.33` | release candidate, az RC-k között változhat az írásmód                |
 | `@prisma/orm-postgres` | `8.0.0-rc.23` | release candidate, a `prisma` CLI-vel együtt kell frissíteni          |
 | `@prisma/cli-engine`   | `0.9.0`       | a `prisma.config.ts` ebből importál, a CLI-vel együtt kell frissíteni |
-| `next`                 | `16.4.4`      | a `create-next-app` eleve pontos verzióval telepíti                   |
-| `eslint-config-next`   | `16.4.4`      | a `next`-tel azonos verziónak kell lennie                             |
+| `next`                 | `16.4.5`      | a `create-next-app` eleve pontos verzióval telepíti                   |
+| `eslint-config-next`   | `16.4.5`      | a `next`-tel azonos verziónak kell lennie                             |
 
 Az `-E` (`--save-exact`) kapcsoló írja a pontos verziót a `package.json`-ba (az `orm init` `^`-jellel telepít, ezért kell újra telepíteni a három Prisma-csomagot). A többi csomag (`dotenv`, `prettier`, `tsx`, `typescript` stb.) maradhat `^`-jellel.
 
@@ -161,7 +161,7 @@ Ha a két csomag később ismét ugyanazt a verziót használja, az `overrides` 
 
 **`npm warn ERESOLVE overriding peer dependency ... @effect/vitest ... effect`:** a Prisma CLI korábbi verzióinál a felhős telepítő rész (Prisma Composer) belső függőségei között volt egy verzióütközés (az `alchemy` újabb `@effect/vitest`-et kért, mint amilyen `effect` verziót a Composer rögzített). Az npm feloldotta, ezért csak figyelmeztetés volt, és egy `overrides` bejegyzés a `package.json`-ban eltüntette. A `prisma@8.0.0-rc.27` óta már nem jelentkezik, ezért a bejegyzés törölve lett. Ha egy későbbi verziónál mégis előjönne a figyelmeztetés, az `"overrides": { "@effect/vitest": "<a Composer által kért verzió>" }` bejegyzéssel ismét elnémítható.
 
-**`12 moderate severity vulnerabilities`** (a `prisma@8.0.0-rc.33` és a `next@16.4.4` mellett): mind a 12 közepes súlyosságú, és fejlesztői eszközök függőségeiből jön, amelyeket csak fejlesztés közben, a saját gépen használunk: a `prisma` parancssori eszközéből (`@prisma/compute-sdk`, `@vercel/nft`, `glob`) és az ESLint-csomagokból (`eslint-config-next`, `typescript-eslint` és `@typescript-eslint/*`, `minimatch`). A korábbi RC-knél még 13 volt, ebből 8 magas súlyosságú. A futó alkalmazás függőségeiben (`next`, `@prisma/orm-postgres`, `dotenv`) nincs sérülékenység, ez így ellenőrizhető:
+**`12 moderate severity vulnerabilities`** (a `prisma@8.0.0-rc.33` és a `next@16.4.5` mellett): mind a 12 közepes súlyosságú, és fejlesztői eszközök függőségeiből jön, amelyeket csak fejlesztés közben, a saját gépen használunk: a `prisma` parancssori eszközéből (`@prisma/compute-sdk`, `@vercel/nft`, `glob`) és az ESLint-csomagokból (`eslint-config-next`, `typescript-eslint` és `@typescript-eslint/*`, `minimatch`). A korábbi RC-knél még 13 volt, ebből 8 magas súlyosságú. A futó alkalmazás függőségeiben (`next`, `@prisma/orm-postgres`, `dotenv`) nincs sérülékenység, ez így ellenőrizhető:
 
 ```powershell
 npm audit --omit=dev
