@@ -751,6 +751,8 @@ További tudnivalók:
 > | `temporal.updatedAtJsDate()` (rc.12–17), `temporal.UpdatedAtJsDate` (rc.20–21) | `TimestamptzJsDate @onCreate(now()) @onUpdate(now())` |
 > | `temporal.createdAtJsDate()`                                                   | `TimestamptzJsDate @onCreate(now())`                  |
 
+> Ha MySQL-ből érkezel: a két adatbázis legfontosabb különbségei (idézőjelek, típusok, SQL írásmód, sorozatok, hibakódok): [mysql-vs-postgresql.md](mysql-vs-postgresql.md).
+
 > Részletes összefoglaló a dátum- és időtípusokról (PostgreSQL, Prisma 8, TypeScript, JSON, időzónák, írás és szűrés): [DATE-TIME.md](DATE-TIME.md).
 
 **Rövid alakok (rc.22-től).** A `DateTime` és a `Date` úgynevezett kényelmi (convenience) típus, amely a paramétereiből választ konkrét típust:
