@@ -24,14 +24,14 @@
   "dependencies": {
     "@prisma/orm-postgres": "8.0.0-rc.23",
     "dotenv": "^18.0.9",
-    "next": "16.4.4"
+    "next": "16.4.5"
   },
   "devDependencies": {
     "@prisma/cli-engine": "0.9.0",
     "@types/node": "^24.19.2",
     "@types/react": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.4.4",
+    "eslint-config-next": "16.4.5",
     "prettier": "^3.9.10",
     "prisma": "8.0.0-rc.33",
     "tsx": "^4.23.15",
