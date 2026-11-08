@@ -549,7 +549,7 @@ pause
 | ---------------------- | ------------------------------------------ |
 | `1_initPostgres.bat`   | az adatkönyvtár létrehozása (csak egyszer) |
 | `2_startPostgres.bat`  | a szerver indítása                         |
-| `3_createMyDb.bat`     | a `mydb` adatbázis létrehozása             |
+| `3_createDB.bat`       | adatbázis létrehozása (a nevét bekéri)     |
 | `4_statusPostgres.bat` | fut-e a szerver                            |
 | `5_pgAdmin.bat`        | a pgAdmin 4 indítása                       |
 | `6_stopPostgres.bat`   | a szerver leállítása                       |
@@ -647,12 +647,41 @@ c:\pgsql\bin\pg_ctl.exe -D c:\pgdata stop
 pause
 ```
 
-**Az adatbázis létrehozása** (a szerver elindítása után; a `createdb.exe` bekéri a `postgres` felhasználó jelszavát):
+**Az adatbázis létrehozása** (a szerver elindítása után). A script futtatáskor bekéri az adatbázis nevét, a `createdb.exe` pedig a `postgres` felhasználó jelszavát:
 
-./data/3_createMyDb.bat
+./data/3_createDB.bat
 
 ```bat
-c:\pgsql\bin\createdb.exe -h localhost -p 5432 -U postgres -E UTF8 mydb
+@echo off
+setlocal
+rem Uj adatbazis letrehozasa. A nevet futtataskor kerdezi meg.
+rem A createdb bekeri a postgres felhasznalo jelszavat (az initdb-nel megadott jelszo).
+
+set PGBIN=c:\pgsql\bin
+
+set "DBNAME="
+set /p DBNAME="Az uj adatbazis neve: "
+
+if "%DBNAME%"=="" (
+  echo.
+  echo Nem adtal meg nevet, kilepes.
+  pause
+  exit /b 1
+)
+
+echo.
+echo A(z) "%DBNAME%" adatbazis letrehozasa...
+%PGBIN%\createdb.exe -h localhost -p 5432 -U postgres -E UTF8 "%DBNAME%"
+
+if errorlevel 1 (
+  echo.
+  echo Nem sikerult letrehozni. Fut a szerver? Letezik mar ilyen nevu adatbazis?
+) else (
+  echo.
+  echo Kesz: %DBNAME%
+  echo A .env-ben a kapcsolat igy nez ki:
+  echo   DATABASE_URL="postgresql://postgres:jelszo@localhost:5432/%DBNAME%"
+)
 pause
 ```
 
