@@ -536,37 +536,120 @@ Hordozható, "igazi" PostgreSQL szerver, Windows-szolgáltatás nélkül: a szer
 
 **Az adatkönyvtár létrehozása** (csak egyszer kell; a `-W` kapcsoló bekéri a `postgres` felhasználó jelszavát):
 
-./data/initPostgres.bat
+./data/1_initPostgres.bat
 
 ```bat
 if not exist "c:\pgdata\" c:\pgsql\bin\initdb.exe -D c:\pgdata -U postgres -W -E UTF8 -A scram-sha-256
 pause
 ```
 
-**Indítás, állapot és leállítás:**
+**A `data` mappa scriptjei** a használat sorrendjében vannak számozva:
 
-./data/startPostgres.bat
+| Script                 | Mit csinál                                 |
+| ---------------------- | ------------------------------------------ |
+| `1_initPostgres.bat`   | az adatkönyvtár létrehozása (csak egyszer) |
+| `2_startPostgres.bat`  | a szerver indítása                         |
+| `3_createMyDb.bat`     | a `mydb` adatbázis létrehozása             |
+| `4_statusPostgres.bat` | fut-e a szerver                            |
+| `5_pgAdmin.bat`        | a pgAdmin 4 indítása                       |
+| `6_stopPostgres.bat`   | a szerver leállítása                       |
+
+**Indítás:**
+
+./data/2_startPostgres.bat
 
 ```bat
-c:\pgsql\bin\pg_ctl.exe -D c:\pgdata -l c:\pgdata\postgres.log start
+@echo off
+set PGBIN=c:\pgsql\bin
+set PGDATA=c:\pgdata
+set PGLOG=c:\pgsql\postgres.log
+echo A PostgreSQL inditasa...
+powershell -NoProfile -Command "Start-Process -FilePath '%PGBIN%\pg_ctl.exe' -ArgumentList '-D','%PGDATA%','-l','%PGLOG%','start' -WindowStyle Hidden"
+
+rem Varakozas, amig a szerver fogadni tudja a kapcsolatokat (legfeljebb kb. 15 masodperc):
+for /l %%i in (1,1,15) do (
+  %PGBIN%\pg_ctl.exe -D %PGDATA% status >nul 2>&1
+  if not errorlevel 1 goto ready
+  >nul ping -n 2 127.0.0.1
+)
+
+echo.
+echo A szerver nem indult el idoben. A naplo (%PGLOG%) vege:
+echo.
+powershell -NoProfile -Command "Get-Content '%PGLOG%' -Tail 15"
+echo.
+pause
+exit /b 1
+
+:ready
+echo.
+%PGBIN%\pg_ctl.exe -D %PGDATA% status
+echo.
+echo A szerver fut, ez az ablak bezarhato. Leallitas: a stopPostgres scripttel.
+pause
 ```
 
-./data/statusPostgres.bat
+> **A napló szándékosan a `c:\pgdata` mappán kívülre, a `c:\pgsql\postgres.log` fájlba kerül.** Ha a
+> naplófájl a PGDATA-ban van, egy nem szabályos leállás (például az indító ablak bezárása) után a
+> szerver nem tud újraindulni: a helyreállításkor végigszinkronizálja a PGDATA összes fájlját, és a
+> megnyitva tartott naplófájlon ez `could not open file "./postgres.log": sharing violation`
+> hibával elszáll.
+
+> **Miért PowerShell-lel indul?** A `pg_ctl`-lel közvetlenül indított szerver ahhoz a cmd ablakhoz
+> tartozik, amelyikből indult: az ablak bezárása leállítja (`received fast shutdown request` a
+> naplóban). A `Start-Process` külön, rejtett konzolt ad neki, így az indító ablak bezárható.
+> A `-Wait` kapcsoló és a kimenet átirányítása (`-RedirectStandardOutput`) viszont **nem**
+> használható: mindkettő a futva maradó `postgres.exe`-re (illetve az általa örökölt handle-ökre)
+> várna, és a parancsfájl soha nem lépne tovább - az ablak némán állna. Ezért indul "eldobva", és a
+> script utána `pg_ctl status`-szal várja meg, hogy a szerver fogadni tudja a kapcsolatokat.
+
+**Állapot:**
+
+./data/4_statusPostgres.bat
 
 ```bat
 c:\pgsql\bin\pg_ctl.exe -D c:\pgdata status
 pause
 ```
 
-./data/stopPostgres.bat
+**A pgAdmin 4 indítása** (a szervernek futnia kell; a `start ""` miatt külön processzként indul, ezért a parancsablak rögtön bezárható). SQL futtatása benne: a bal oldali fában jelöld ki az adatbázist, majd jobb klikk → **Query Tool** (`Alt+Shift+Q`), és **F5**:
+
+./data/5_pgAdmin.bat
 
 ```bat
+@echo off
+rem A pgAdmin 4 grafikus felulet inditasa. A "start" miatt kulon processzkent indul,
+rem ezert ez az ablak rogton bezarhato (a pgAdmin fut tovabb).
+rem
+rem A pgAdmin elso inditasa lassu (sajat webkiszolgalot indit), legy turelemmel.
+rem Kapcsolodas: Host localhost, Port 5432, Username postgres, a jelszo az initdb-nel megadott.
+
+set PGADMIN="c:\pgsql\pgAdmin 4\runtime\pgAdmin4.exe"
+
+if not exist %PGADMIN% (
+  echo Nem talalhato: %PGADMIN%
+  echo Ellenorizd a pgAdmin telepitesi helyet, es ird at a PGADMIN valtozot!
+  pause
+  exit /b 1
+)
+
+echo A pgAdmin 4 inditasa...
+start "" %PGADMIN%
+```
+
+**Leállítás:**
+
+./data/6_stopPostgres.bat
+
+```bat
+@echo off
 c:\pgsql\bin\pg_ctl.exe -D c:\pgdata stop
+pause
 ```
 
 **Az adatbázis létrehozása** (a szerver elindítása után; a `createdb.exe` bekéri a `postgres` felhasználó jelszavát):
 
-./data/createMyDb.bat
+./data/3_createMyDb.bat
 
 ```bat
 c:\pgsql\bin\createdb.exe -h localhost -p 5432 -U postgres -E UTF8 mydb
