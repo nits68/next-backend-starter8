@@ -8,7 +8,6 @@ model Film {
   updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
 
   @@map("films")
-  @@rls
 }
 
 model User {
@@ -21,7 +20,6 @@ model User {
   posts     Post[]
 
   @@map("users")
-  @@rls
 }
 
 model Post {
@@ -36,5 +34,4 @@ model Post {
 
   @@index([authorId])
   @@map("posts")
-  @@rls
 }
