@@ -14,6 +14,7 @@
     "db:verify": "prisma db verify",
     "db:sign": "prisma db sign",
     "db:seed": "tsx prisma/seed.ts",
+    "db:drop": "tsx prisma/drop.ts",
     "db:setup": "prisma contract emit && prisma db init && tsx prisma/seed.ts",
     "db:infer1": "npx prisma contract infer --output ./prisma/contract.prisma",
     "db:infer2": "npx prisma contract emit && npx prisma db sign",
@@ -24,14 +25,14 @@
   "dependencies": {
     "@prisma/orm-postgres": "8.0.0-rc.23",
     "dotenv": "^18.0.9",
-    "next": "16.4.5"
+    "next": "16.4.6"
   },
   "devDependencies": {
     "@prisma/cli-engine": "0.9.0",
     "@types/node": "^24.19.2",
     "@types/react": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.4.5",
+    "eslint-config-next": "16.4.6",
     "prettier": "^3.9.10",
     "prisma": "8.0.0-rc.33",
     "tsx": "^4.23.15",

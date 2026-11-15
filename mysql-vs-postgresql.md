@@ -22,12 +22,13 @@ váltanak. A példák MySQL 8 és PostgreSQL 15+ szerint készültek.
 
 ## 2. Nevek és idézőjelek
 
-| Mire?                    | MySQL                                            | PostgreSQL                                                      |
-| ------------------------ | ------------------------------------------------ | --------------------------------------------------------------- |
-| foglalt szó mint név     | ``SELECT `order` FROM t``                        | `SELECT "order" FROM t`                                         |
-| nagybetűs név            | `SELECT createdAt FROM users` működik            | `SELECT "createdAt" FROM users` (idézőjel nélkül → `createdat`) |
-| tábla nevének betűmérete | operációs rendszertől függ (Windows: nem számít) | mindig számít, idézőjel nélkül kisbetűsre alakul                |
-| oszlopnév betűmérete     | nem számít                                       | idézőjel nélkül kisbetűsre alakul                               |
+| Mire?                    | MySQL                                            | PostgreSQL                                                              |
+| ------------------------ | ------------------------------------------------ | ----------------------------------------------------------------------- |
+| foglalt szó mint név     | ``SELECT `order` FROM t``                        | `SELECT "order" FROM t`                                                 |
+| `user` tábla             | `SELECT * FROM user` működik                     | `SELECT * FROM "user"` (idézőjel nélkül → a bejelentkezett felhasználó) |
+| nagybetűs név            | `SELECT createdAt FROM article` működik          | `SELECT "createdAt" FROM article` (idézőjel nélkül → `createdat`)       |
+| tábla nevének betűmérete | operációs rendszertől függ (Windows: nem számít) | mindig számít, idézőjel nélkül kisbetűsre alakul                        |
+| oszlopnév betűmérete     | nem számít                                       | idézőjel nélkül kisbetűsre alakul                                       |
 
 > **Tanulság:** PostgreSQL-ben a tábla- és oszlopnevek legyenek **kisbetűsek, `snake_case`**
 > írásmódúak (`created_at`, `author_id`), így sosem kell idézőjel. A Prisma contractban a
@@ -75,23 +76,23 @@ Részletesen a dátum- és időtípusokról: [DATE-TIME.md](DATE-TIME.md).
 
 ```sql
 -- MySQL
-INSERT INTO films (title, content) VALUES ('Vuk', 'animációs')
-ON DUPLICATE KEY UPDATE content = VALUES(content);
+INSERT INTO user (email, name) VALUES ('anna@pelda.hu', 'Kiss Anna')
+ON DUPLICATE KEY UPDATE name = VALUES(name);
 
 -- PostgreSQL
-INSERT INTO films (title, content) VALUES ('Vuk', 'animációs')
-ON CONFLICT (title) DO UPDATE SET content = EXCLUDED.content;
+INSERT INTO "user" (email, name) VALUES ('anna@pelda.hu', 'Kiss Anna')
+ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name;
 ```
 
 ### A beszúrt rekord azonosítója
 
 ```sql
 -- MySQL
-INSERT INTO users (email) VALUES ('anna@pelda.hu');
+INSERT INTO user (email) VALUES ('anna@pelda.hu');
 SELECT LAST_INSERT_ID();
 
 -- PostgreSQL: egy lépésben, akár a teljes rekordot
-INSERT INTO users (email) VALUES ('anna@pelda.hu') RETURNING id, email;
+INSERT INTO "user" (email) VALUES ('anna@pelda.hu') RETURNING id, email;
 ```
 
 ## 5. Automatikus azonosítók (sorozatok)
@@ -104,7 +105,7 @@ INSERT INTO users (email) VALUES ('anna@pelda.hu') RETURNING id, email;
 
 ```sql
 -- PostgreSQL: sorozat igazítása kézi id-k után
-SELECT setval(pg_get_serial_sequence('films', 'id'), (SELECT max(id) FROM films));
+SELECT setval(pg_get_serial_sequence('article', 'id'), (SELECT max(id) FROM article));
 ```
 
 ## 6. Hibakódok
@@ -128,7 +129,7 @@ SELECT setval(pg_get_serial_sequence('films', 'id'), (SELECT max(id) FROM films)
 | adatbázisok listája  | `SHOW DATABASES;`         | `\l`                         |
 | adatbázis váltása    | `USE mydb;`               | `\c mydb`                    |
 | táblák listája       | `SHOW TABLES;`            | `\dt`                        |
-| tábla szerkezete     | `DESCRIBE users;`         | `\d users`                   |
+| tábla szerkezete     | `DESCRIBE user;`          | `\d "user"`                  |
 | kilépés              | `exit`                    | `\q`                         |
 | SQL script futtatása | `mysql mydb < script.sql` | `psql -d mydb -f script.sql` |
 
@@ -141,9 +142,9 @@ SELECT setval(pg_get_serial_sequence('films', 'id'), (SELECT max(id) FROM films)
 ```sql
 -- PostgreSQL: a szerkezetmódosítás is visszavonható
 BEGIN;
-ALTER TABLE films ADD COLUMN hossz integer;
-DROP TABLE posts;
-ROLLBACK;  -- az oszlop nem jön létre, a posts tábla megmarad
+ALTER TABLE "user" ADD COLUMN szuletesi_ev integer;
+DROP TABLE article;
+ROLLBACK;  -- az oszlop nem jön létre, az article tábla megmarad
 ```
 
 MySQL-ben a `CREATE`, `ALTER`, `DROP` azonnal véglegesít (implicit `COMMIT`), a fenti
@@ -154,7 +155,7 @@ MySQL-ben a `CREATE`, `ALTER`, `DROP` azonnal véglegesít (implicit `COMMIT`), 
 - A sablon PostgreSQL-re készült (`@prisma/orm-postgres`). A Prisma 8 MySQL-hez külön csomagot ad
   (`@prisma/orm-mysql`); a contract és a lekérdező API nagyrészt ugyanaz, de a típusok és a
   hibakódok a fentiek szerint eltérnek.
-- A route-okban a Prisma lekérdező API (`db.orm.public.Film...`) mindkét adatbázison ugyanúgy
+- A route-okban a Prisma lekérdező API (`db.orm.public.Article...`) mindkét adatbázison ugyanúgy
   néz ki, a különbség a **nyers SQL-ben** (`db.raw.sql`), a **hibakódokban** (`sqlState`) és a
   **típusokban** (pl. `boolean`, tömbök, `timestamptz`) jön elő.
 - A kis-/nagybetű érzékenység a Prisma szűrőinél is számít: PostgreSQL-ben a `.like("%egri%")`

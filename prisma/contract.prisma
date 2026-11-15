@@ -1,28 +1,24 @@
 // use prisma-8
 // Contract inferred from the live database schema. Edit as needed, then run `prisma contract emit`.
-model Film {
-  id        Int               @id() @default(autoincrement())
-  content   String
-  createdAt TimestamptzJsDate @default(now()) @map("created_at")
-  title     String            @unique()
-  updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
 
-  @@map("films")
-}
+// Author and Article are connected via a one-to-many (1:N) relationship,
+// where an Author can have many Articles, and each Article belongs to one Author.
 
-model User {
+model Author {
   id        Int               @id() @default(autoincrement())
   createdAt TimestamptzJsDate @default(now()) @map("created_at")
   email     String            @unique()
   name      String?
   updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
   username  String?
-  posts     Post[]
 
-  @@map("users")
+  // connection field:
+  articles  Article[]
+
+  @@map("author")
 }
 
-model Post {
+model Article {
   id        Int               @id() @default(autoincrement())
   authorId  Int               @map("author_id")
   content   String?
@@ -30,8 +26,9 @@ model Post {
   title     String
   updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
 
-  author    User              @relation(fields: [authorId], references: [id], map: "posts_author_id_fkey")
+  // connection field:
+  author    Author            @relation(fields: [authorId], references: [id], map: "article_author_id_fkey")
 
-  @@index([authorId])
-  @@map("posts")
+  @@index([authorId])  // Prisma dont have field-level indexes like SQL, so we need to create a model-level index for the foreign key field
+  @@map("article")
 }

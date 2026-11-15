@@ -7,8 +7,11 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "always"
   },
-  "markdown.preview.scrollPreviewWithEditor": false,
-  "markdown.preview.scrollEditorWithPreview": false,
+
+  // zárójelek, idézőjelek és tag-ek kezelése: 
+  "editor.autoClosingBrackets": "beforeWhitespace",
+  "editor.autoClosingQuotes": "beforeWhitespace",
+  
   "eslint.validate": ["typescript", "react", "typescriptreact", "javascript", "javascriptreact"],
   "files.autoSave": "afterDelay",
   "files.autoSaveDelay": 1000,

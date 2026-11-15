@@ -141,8 +141,8 @@ Hasznos SQL (pgAdmin, psql):
 SELECT now();                                   -- most (timestamptz)
 SELECT current_date;                            -- mai nap (date)
 SELECT now() AT TIME ZONE 'Europe/Budapest';    -- helyi falióra idő (timestamp)
-SELECT created_at::date FROM users;             -- csak a nap
-SELECT * FROM posts WHERE created_at >= now() - interval '7 days';
+SELECT created_at::date FROM author;            -- csak a nap
+SELECT * FROM article WHERE created_at >= now() - interval '7 days';
 SHOW timezone;                                  -- a szerver időzónája
 ```
 

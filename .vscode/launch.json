@@ -9,14 +9,20 @@
       "resolveSourceMapLocations": [
         "${workspaceFolder}/**",
         "!**/node_modules/**",
-        "!**/.next/dev/server/chunks/turbopack*/**"
+        "!**/.next/dev/server/chunks/turbopack*/**",
+        "!${workspaceFolder}/[0-9]-*/**"
       ]
     },
     {
       "name": "Debug seed",
       "type": "node-terminal",
       "request": "launch",
-      "command": "npm run db:seed"
+      "command": "npm run db:seed",
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**",
+        "!${workspaceFolder}/[0-9]-*/**"
+      ]
     }
   ]
 }

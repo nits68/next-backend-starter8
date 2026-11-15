@@ -1,12 +1,12 @@
 {
-    "recommendations": [
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode",
-        "prisma.prisma",
-        "humao.rest-client",
-        "ms-ossdata.vscode-pgsql",
-        "usernamehw.errorlens",
-        "abdulowhab.json-to-ts-type",
-        "yoavbls.pretty-ts-errors"
-    ]
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "prisma.prisma",
+    "humao.rest-client",
+    "ms-ossdata.vscode-pgsql",
+    "abdulowhab.json-to-ts-type",
+    "yoavbls.pretty-ts-errors",
+    "shd101wyy.markdown-preview-enhanced"
+  ]
 }

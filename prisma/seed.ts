@@ -2,114 +2,104 @@
 
 import { db } from "./db";
 
-// Minta filmek (a title egyedi, @unique)
-const FILMS = [
-  { title: "Körhinta", content: "dráma" },
-  { title: "Egri csillagok", content: "történelmi" },
-  { title: "A Pál utcai fiúk", content: "ifjúsági" },
-  { title: "A tanú", content: "szatíra" },
-  { title: "Szindbád", content: "dráma" },
-  { title: "Macskafogó", content: "animációs" },
-  { title: "Indul a bakterház", content: "vígjáték" },
-  { title: "Üvegtigris", content: "vígjáték" },
-  { title: "Kontroll", content: "thriller" },
-  { title: "Saul fia", content: "háborús dráma" },
-  { title: "Testről és lélekről", content: "romantikus dráma" },
-  { title: "Mephisto", content: "dráma" },
-  { title: "Az ötödik pecsét", content: "háborús dráma" },
-  { title: "Hyppolit, a lakáj", content: "vígjáték" },
-  { title: "Valahol Európában", content: "háborús dráma" },
-  { title: "A kőszívű ember fiai", content: "történelmi" },
-  { title: "Vuk", content: "animációs" },
-  { title: "Csinibaba", content: "zenés vígjáték" },
+// Minta szerzők (az email egyedi, @unique); az id-t is mi adjuk meg
+const AUTHORS = [
+  { id: 1, email: "kiss.anna@pelda.hu", username: "kanna", name: "Kiss Anna" },
+  { id: 2, email: "nagy.peter@pelda.hu", username: "npeter", name: "Nagy Péter" },
+  { id: 3, email: "szabo.eszter@pelda.hu", username: "szeszter", name: "Szabó Eszter" },
+  { id: 4, email: "toth.gabor@pelda.hu", username: "tgabor", name: "Tóth Gábor" },
+  { id: 5, email: "horvath.lilla@pelda.hu", username: "hlilla", name: "Horváth Lilla" },
+  { id: 6, email: "varga.bence@pelda.hu", username: "vbence", name: "Varga Bence" },
+  { id: 7, email: "kovacs.reka@pelda.hu", username: "kreka", name: "Kovács Réka" },
+  { id: 8, email: "molnar.adam@pelda.hu", username: "madam", name: "Molnár Ádám" },
+  { id: 9, email: "farkas.zsofia@pelda.hu", username: "fzsofia", name: "Farkas Zsófia" },
+  { id: 10, email: "balogh.mate@pelda.hu", username: "bmate", name: "Balogh Máté" },
+  { id: 11, email: "papp.noemi@pelda.hu", username: "pnoemi", name: "Papp Noémi" },
+  { id: 12, email: "lakatos.daniel@pelda.hu", username: "ldaniel", name: "Lakatos Dániel" },
+  { id: 13, email: "simon.petra@pelda.hu", username: null, name: "Simon Petra" },
+  { id: 14, email: "fekete.levente@pelda.hu", username: null, name: "Fekete Levente" },
+  { id: 15, email: "vendeg@pelda.hu", username: "vendeg", name: null },
 ];
 
-// Minta felhasználók (az email egyedi, @unique)
-const USERS = [
-  { email: "kiss.anna@pelda.hu", username: "kanna", name: "Kiss Anna" },
-  { email: "nagy.peter@pelda.hu", username: "npeter", name: "Nagy Péter" },
-  { email: "szabo.eszter@pelda.hu", username: "szeszter", name: "Szabó Eszter" },
-  { email: "toth.gabor@pelda.hu", username: "tgabor", name: "Tóth Gábor" },
-  { email: "horvath.lilla@pelda.hu", username: "hlilla", name: "Horváth Lilla" },
-  { email: "varga.bence@pelda.hu", username: "vbence", name: "Varga Bence" },
-  { email: "kovacs.reka@pelda.hu", username: "kreka", name: "Kovács Réka" },
-  { email: "molnar.adam@pelda.hu", username: "madam", name: "Molnár Ádám" },
-  { email: "farkas.zsofia@pelda.hu", username: "fzsofia", name: "Farkas Zsófia" },
-  { email: "balogh.mate@pelda.hu", username: "bmate", name: "Balogh Máté" },
-  { email: "papp.noemi@pelda.hu", username: "pnoemi", name: "Papp Noémi" },
-  { email: "lakatos.daniel@pelda.hu", username: "ldaniel", name: "Lakatos Dániel" },
-  { email: "simon.petra@pelda.hu", username: null, name: "Simon Petra" },
-  { email: "fekete.levente@pelda.hu", username: null, name: "Fekete Levente" },
-  { email: "vendeg@pelda.hu", username: "vendeg", name: null },
-];
-
-// Minta bejegyzések: a szerzőt a felhasználó emailjével adjuk meg
-const POSTS = [
+// Minta cikkek: az id-t és a szerző id-jét (authorId, idegen kulcs) is mi adjuk meg
+const ARTICLES = [
   {
-    szerzo: "kiss.anna@pelda.hu",
+    id: 1,
+    authorId: 1,
     title: "Kedvenc magyar filmem",
     content: "A Körhinta minden alkalommal megríkat.",
   },
   {
-    szerzo: "kiss.anna@pelda.hu",
+    id: 2,
+    authorId: 1,
     title: "Filmklub csütörtökön",
     content: "A tanú lesz a következő film.",
   },
-  { szerzo: "kiss.anna@pelda.hu", title: "Klasszikusok hétvégére", content: null },
+  { id: 3, authorId: 1, title: "Klasszikusok hétvégére", content: null },
   {
-    szerzo: "nagy.peter@pelda.hu",
+    id: 4,
+    authorId: 2,
     title: "Macskafogó újranézve",
     content: "Felnőttként is ugyanolyan jó.",
   },
   {
-    szerzo: "nagy.peter@pelda.hu",
+    id: 5,
+    authorId: 2,
     title: "Animációs filmek listája",
     content: "Vuk, Macskafogó, Fehérlófia.",
   },
-  { szerzo: "szabo.eszter@pelda.hu", title: "Saul fia élmény", content: "Nehéz, de fontos film." },
-  { szerzo: "toth.gabor@pelda.hu", title: "Üvegtigris idézetek", content: "Melyik a kedvencetek?" },
-  { szerzo: "toth.gabor@pelda.hu", title: "Vígjátékok estére", content: null },
+  { id: 6, authorId: 3, title: "Saul fia élmény", content: "Nehéz, de fontos film." },
+  { id: 7, authorId: 4, title: "Üvegtigris idézetek", content: "Melyik a kedvencetek?" },
+  { id: 8, authorId: 4, title: "Vígjátékok estére", content: null },
   {
-    szerzo: "horvath.lilla@pelda.hu",
+    id: 9,
+    authorId: 5,
     title: "Kontroll forgatási helyszínek",
     content: "A budapesti metróban forgott.",
   },
   {
-    szerzo: "varga.bence@pelda.hu",
+    id: 10,
+    authorId: 6,
     title: "Egri csillagok: könyv vagy film?",
     content: "Szerintem a könyv jobb.",
   },
   {
-    szerzo: "kovacs.reka@pelda.hu",
+    id: 11,
+    authorId: 7,
     title: "Testről és lélekről",
     content: "Különleges hangulatú film.",
   },
-  { szerzo: "kovacs.reka@pelda.hu", title: "Romantikus filmek", content: null },
+  { id: 12, authorId: 7, title: "Romantikus filmek", content: null },
   {
-    szerzo: "molnar.adam@pelda.hu",
+    id: 13,
+    authorId: 8,
     title: "Háborús drámák",
     content: "Az ötödik pecsét és a Valahol Európában.",
   },
   {
-    szerzo: "farkas.zsofia@pelda.hu",
+    id: 14,
+    authorId: 9,
     title: "Régi magyar vígjátékok",
     content: "Hyppolit, a lakáj - örök klasszikus.",
   },
-  { szerzo: "balogh.mate@pelda.hu", title: "Csinibaba zenéi", content: "A dalokat ma is dúdolom." },
+  { id: 15, authorId: 10, title: "Csinibaba zenéi", content: "A dalokat ma is dúdolom." },
   {
-    szerzo: "papp.noemi@pelda.hu",
+    id: 16,
+    authorId: 11,
     title: "Szindbád és a gasztronómia",
     content: "A húsleves-jelenet legendás.",
   },
   {
-    szerzo: "lakatos.daniel@pelda.hu",
+    id: 17,
+    authorId: 12,
     title: "Mephisto - Oscar-díj",
     content: "1982-ben nyert Oscart.",
   },
-  { szerzo: "simon.petra@pelda.hu", title: "Első bejegyzésem", content: "Sziasztok!" },
-  { szerzo: "fekete.levente@pelda.hu", title: "Ajánlás hétvégére", content: "Indul a bakterház!" },
+  { id: 18, authorId: 13, title: "Első bejegyzésem", content: "Sziasztok!" },
+  { id: 19, authorId: 14, title: "Ajánlás hétvégére", content: "Indul a bakterház!" },
   {
-    szerzo: "fekete.levente@pelda.hu",
+    id: 20,
+    authorId: 14,
     title: "Jókai-feldolgozások",
     content: "A kőszívű ember fiai is nagyon jó.",
   },
@@ -118,28 +108,29 @@ const POSTS = [
 async function main() {
   // Minden tábla kiürítése, és az id sorozatok (sequence) visszaállítása 1-re, hogy újrafuttatás
   // után is 1-től kezdődjenek az id-k. (A deleteAll() csak a sorokat törli, a sorozatot nem.)
-  // Nyers SQL, ezért az adatbázisbeli táblaneveket használja (posts, users, films).
+  // Nyers SQL, ezért az adatbázisbeli táblaneveket használja (article, author).
   await db.query(
-    db.raw.sql`TRUNCATE TABLE posts, users, films RESTART IDENTITY`.affectedCount().build(),
+    db.raw.sql`TRUNCATE TABLE article, author RESTART IDENTITY`.affectedCount().build(),
   );
 
-  await db.orm.public.Film.createAll(FILMS);
+  await db.orm.public.Author.createAll(AUTHORS);
+  await db.orm.public.Article.createAll(ARTICLES);
 
-  // A createAll a létrehozott rekordokat adja vissza, így megkapjuk a felhasználók id-jét
-  const users = await db.orm.public.User.createAll(USERS);
-  const idByEmail = new Map(users.map((u) => [u.email, u.id]));
-
-  await db.orm.public.Post.createAll(
-    POSTS.map((e) => ({
-      title: e.title,
-      content: e.content,
-      authorId: idByEmail.get(e.szerzo)!,
-    })),
+  // Mivel az id-ket kézzel adtuk meg, az id sorozat (sequence) változója nem lépett tovább.
+  // Beállítjuk a legnagyobb id-re, így a következő automatikus id max + 1 lesz (nem 1).
+  await db.query(
+    db.raw.sql`SELECT setval(pg_get_serial_sequence('author', 'id'), (SELECT MAX(id) FROM author))`
+      .affectedCount()
+      .build(),
+  );
+  await db.query(
+    db.raw
+      .sql`SELECT setval(pg_get_serial_sequence('article', 'id'), (SELECT MAX(id) FROM article))`
+      .affectedCount()
+      .build(),
   );
 
-  console.log(
-    `Feltöltve: ${FILMS.length} film, ${users.length} felhasználó, ${POSTS.length} bejegyzés`,
-  );
+  console.log(`Feltöltve: ${AUTHORS.length} szerző, ${ARTICLES.length} cikk`);
   await db.close();
 }
 

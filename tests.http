@@ -1,7 +1,51 @@
 ### Example API endpoint rest client tests
 
-### Get "Hello World" message
-GET http://localhost:3000
+### ===== Article (cikk) =====
 
-### Get "Hello Jedlik" message, when name parameter [slug] is provided
-GET http://localhost:3000/Jedlik
+### Összes cikk (a szerzővel)
+GET http://localhost:3000/api-examples/articles
+
+### Egy cikk
+GET http://localhost:3000/api-examples/articles/1
+
+### Hibás azonosító (400)
+GET http://localhost:3000/api-examples/articles/abc
+
+### Nem létező cikk (404)
+GET http://localhost:3000/api-examples/articles/999
+
+### Keresés mindkét oldalra: cím (Article) ÉS szerző neve (Author)
+GET http://localhost:3000/api-examples/articles/search?title=film&author=anna
+
+### Keresés hiányzó paraméterrel (400)
+GET http://localhost:3000/api-examples/articles/search?title=film
+
+### Új cikk
+POST http://localhost:3000/api-examples/articles
+Content-Type: application/json
+
+{
+  "title": "Új cikk",
+  "content": "Teszt tartalom",
+  "authorId": 2
+}
+
+### Új cikk nem létező szerzővel (400, sqlState: 23503)
+POST http://localhost:3000/api-examples/articles
+Content-Type: application/json
+
+{
+  "title": "Hibás cikk",
+  "authorId": 999
+}
+
+### Cikk módosítása
+PATCH http://localhost:3000/api-examples/articles/1
+Content-Type: application/json
+
+{
+  "content": "Módosított tartalom"
+}
+
+### Cikk törlése
+DELETE http://localhost:3000/api-examples/articles/1

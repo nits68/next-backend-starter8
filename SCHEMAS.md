@@ -17,17 +17,17 @@ több sémába rendezhetjük:
 iskola_adatbazis
 │
 ├── public          – általános adatok
-│   ├── users
-│   └── settings
+│   ├── user        – SQL-ben: "user" (foglalt szó)
+│   └── setting
 │
 ├── oktatas         – oktatási adatok
-│   ├── students
-│   ├── teachers
-│   └── classes
+│   ├── student
+│   ├── teacher
+│   └── class
 │
 └── penzugy         – pénzügyi adatok
-    ├── invoices
-    └── payments
+    ├── invoice
+    └── payment
 ```
 
 A sémák legfontosabb előnyei:
@@ -52,9 +52,9 @@ schema_neve.tabla_neve
 Például:
 
 ``` sql
-SELECT * FROM oktatas.students;
+SELECT * FROM oktatas.student;
 
-SELECT * FROM penzugy.invoices;
+SELECT * FROM penzugy.invoice;
 ```
 
 Így egyértelmű, hogy melyik sémában található táblát szeretnénk elérni.
@@ -70,7 +70,7 @@ CREATE SCHEMA oktatas;
 Tábla létrehozása az adott sémában:
 
 ``` sql
-CREATE TABLE oktatas.students (
+CREATE TABLE oktatas.student (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100),
     email VARCHAR(150)
@@ -94,7 +94,7 @@ A PostgreSQL-adatbázisokban alapértelmezés szerint rendelkezésre áll a
 Ha nem adunk meg külön sémát:
 
 ``` sql
-CREATE TABLE students (
+CREATE TABLE student (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100)
 );

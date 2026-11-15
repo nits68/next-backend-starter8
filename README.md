@@ -79,8 +79,8 @@ A parancssorban (`cmd`) ez akkor fordul elő, ha a mappába kisbetűvel lépsz b
 | `prisma`               | `8.0.0-rc.33` | release candidate, az RC-k között változhat az írásmód                |
 | `@prisma/orm-postgres` | `8.0.0-rc.23` | release candidate, a `prisma` CLI-vel együtt kell frissíteni          |
 | `@prisma/cli-engine`   | `0.9.0`       | a `prisma.config.ts` ebből importál, a CLI-vel együtt kell frissíteni |
-| `next`                 | `16.4.5`      | a `create-next-app` eleve pontos verzióval telepíti                   |
-| `eslint-config-next`   | `16.4.5`      | a `next`-tel azonos verziónak kell lennie                             |
+| `next`                 | `16.4.6`      | a `create-next-app` eleve pontos verzióval telepíti                   |
+| `eslint-config-next`   | `16.4.6`      | a `next`-tel azonos verziónak kell lennie                             |
 
 Az `-E` (`--save-exact`) kapcsoló írja a pontos verziót a `package.json`-ba (az `orm init` `^`-jellel telepít, ezért kell újra telepíteni a három Prisma-csomagot). A többi csomag (`dotenv`, `prettier`, `tsx`, `typescript` stb.) maradhat `^`-jellel.
 
@@ -161,7 +161,7 @@ Ha a két csomag később ismét ugyanazt a verziót használja, az `overrides` 
 
 **`npm warn ERESOLVE overriding peer dependency ... @effect/vitest ... effect`:** a Prisma CLI korábbi verzióinál a felhős telepítő rész (Prisma Composer) belső függőségei között volt egy verzióütközés (az `alchemy` újabb `@effect/vitest`-et kért, mint amilyen `effect` verziót a Composer rögzített). Az npm feloldotta, ezért csak figyelmeztetés volt, és egy `overrides` bejegyzés a `package.json`-ban eltüntette. A `prisma@8.0.0-rc.27` óta már nem jelentkezik, ezért a bejegyzés törölve lett. Ha egy későbbi verziónál mégis előjönne a figyelmeztetés, az `"overrides": { "@effect/vitest": "<a Composer által kért verzió>" }` bejegyzéssel ismét elnémítható.
 
-**`12 moderate severity vulnerabilities`** (a `prisma@8.0.0-rc.33` és a `next@16.4.5` mellett): mind a 12 közepes súlyosságú, és fejlesztői eszközök függőségeiből jön, amelyeket csak fejlesztés közben, a saját gépen használunk: a `prisma` parancssori eszközéből (`@prisma/compute-sdk`, `@vercel/nft`, `glob`) és az ESLint-csomagokból (`eslint-config-next`, `typescript-eslint` és `@typescript-eslint/*`, `minimatch`). A korábbi RC-knél még 13 volt, ebből 8 magas súlyosságú. A futó alkalmazás függőségeiben (`next`, `@prisma/orm-postgres`, `dotenv`) nincs sérülékenység, ez így ellenőrizhető:
+**`9 moderate severity vulnerabilities`** (a `prisma@8.0.0-rc.33` és a `next@16.4.6` mellett): mind a 9 közepes súlyosságú, és fejlesztői eszközök függőségeiből jön, amelyeket csak fejlesztés közben, a saját gépen használunk: a `prisma` parancssori eszközéből (`@vercel/nft`, `glob`) és az ESLint-csomagokból (`typescript-eslint` és `@typescript-eslint/*`, `minimatch`). A `next@16.4.5` mellett még 12 volt, a korábbi RC-knél 13, ebből 8 magas súlyosságú. A futó alkalmazás függőségeiben (`next`, `@prisma/orm-postgres`, `dotenv`) nincs sérülékenység, ez így ellenőrizhető:
 
 ```powershell
 npm audit --omit=dev
@@ -172,7 +172,7 @@ found 0 vulnerabilities
 ```
 
 > [!WARNING]
-> Az `npm audit fix --force` parancsot **ne** futtasd: a "javítás" a `prisma` csomagot a 7-es verzióra (`fix: prisma@7.10.1`), az `eslint-config-next`-et pedig a Next.js 15-ös verziójához tartozóra (`fix: eslint-config-next@15.5.29`) állítaná vissza, ami a projektet elrontaná. A figyelmeztetések a Prisma 8 végleges kiadásával, a Prisma CLI frissítésekor várhatóan eltűnnek (`npm i -D prisma@latest`).
+> Az `npm audit fix --force` parancsot **ne** futtasd: a "javítás" a `typescript-eslint` csomagot egy jóval régebbi verzióra (`8.72.1 => 8.36.0`, SemVer major változásként jelölve) állítaná vissza, amely peer dependency ütközést okoz az ESLint verziójával. A korábbi verzióknál ugyanez a parancs a `prisma` csomagot a 7-es verzióra (`prisma@7.10.1`), az `eslint-config-next`-et a Next.js 15-ös verziójához tartozóra (`eslint-config-next@15.5.29`) vitte vissza, ami a projektet elrontotta. A figyelmeztetések a Prisma 8 végleges kiadásával, a Prisma CLI frissítésekor várhatóan eltűnnek (`npm i -D prisma@latest`).
 
 ## 3. Prisma konfigurálása: ./prisma.config.ts
 
@@ -777,61 +777,50 @@ Az adatok a Supabase Dashboard **Table Editor** és **SQL Editor** nézetében i
 
 ```
 ✘ [MIGRATION.PLANNING_FAILED] Migration planning failed
-  why: Operation "Disable row-level security on "films"" requires class "widening", but policy allows only: additive
+  why: Operation "Disable row-level security on "article"" requires class "widening", but policy allows only: additive
 ```
 
 Megoldás: a modellekre `@@rls` (a sablonban már benne van), majd `npm run contract:emit` és újra `npm run db:setup` (vagy ha a táblák már léteznek: `npm run db:init`). Az RLS-t **ne kapcsold ki** a Supabase-en (és a `db update`-tel se), mert akkor a táblák a nyilvános kulccsal elérhetővé válnak.
 
 ## 7. Prisma contract létrehozása (minta modellek) ./prisma/contract.prisma
 
-Három minta modell: `User` és `Post` (egy-a-többhöz kapcsolattal: egy felhasználónak több bejegyzése lehet), valamint a kapcsolat nélküli `Film`. Az `orm init` a `User` és `Post` modellt szöveges dátumtípusokkal hozza létre, ezeket írd át a `JsDate`-es típusokra, hogy mindhárom modellben egyformán `Date` objektumként kapd a dátumokat:
+Két minta modell: `Author` és `Article` (egy-a-többhöz kapcsolattal: egy szerzőnek több cikke lehet). Az `orm init` `User` és `Post` modellt hoz létre szöveges dátumtípusokkal: a `User` modellt nevezd át `Author`-ra (a `user` a PostgreSQL-ben foglalt szó, lásd lent), a `Post` modellt `Article`-re (a `Post` név könnyen összekeverhető a HTTP `POST` metódussal), a dátumtípusokat pedig írd át a `JsDate`-es típusokra, hogy `Date` objektumként kapd a dátumokat:
 
 ```prisma
 // use prisma-8
 
-model User {
+model Author {
   id        Int               @id @default(autoincrement())
   email     String            @unique
   username  String?
   name      String?
-  posts     Post[]
+  articles  Article[]
   createdAt TimestamptzJsDate @default(now()) @map("created_at")
   updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
 
-  @@map("users")
+  @@map("author")
   @@rls
 }
 
-model Post {
+model Article {
   id        Int               @id @default(autoincrement())
   title     String
   content   String?
-  author    User              @relation(fields: [authorId], references: [id])
+  author    Author            @relation(fields: [authorId], references: [id])
   authorId  Int               @map("author_id")
   createdAt TimestamptzJsDate @default(now()) @map("created_at")
   updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
 
-  @@map("posts")
-  @@rls
-}
-
-model Film {
-  id        Int               @id @default(autoincrement())
-  title     String            @unique
-  content   String
-  createdAt TimestamptzJsDate @default(now()) @map("created_at")
-  updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
-
-  @@map("films")
+  @@map("article")
   @@rls
 }
 ```
 
 A kapcsolat:
 
-- `Post.authorId` az idegen kulcs oszlop, a `Post.author` mező a `@relation(fields: [authorId], references: [id])` leírással mondja meg, hogy az `authorId` a `User.id`-re hivatkozik. Ebből az adatbázisban `FOREIGN KEY` lesz.
-- `User.posts` a kapcsolat másik oldala (oszlop nincs mögötte), ezzel lehet egy felhasználó bejegyzéseit lekérdezni: `db.orm.public.User.include("posts").all()`.
-- Nem létező `authorId`-vel nem hozható létre bejegyzés, és amíg egy felhasználónak van bejegyzése, a felhasználó nem törölhető (mindkettő `23503`-as hibát ad).
+- `Article.authorId` az idegen kulcs oszlop, az `Article.author` mező a `@relation(fields: [authorId], references: [id])` leírással mondja meg, hogy az `authorId` az `Author.id`-re hivatkozik. Ebből az adatbázisban `FOREIGN KEY` lesz.
+- `Author.articles` a kapcsolat másik oldala (oszlop nincs mögötte), ezzel lehet egy szerző cikkeit lekérdezni: `db.orm.public.Author.include("articles").all()`.
+- Nem létező `authorId`-vel nem hozható létre cikk, és amíg egy szerzőnek van cikke, a szerző nem törölhető (mindkettő `23503`-as hibát ad).
 
 További tudnivalók:
 
@@ -839,11 +828,12 @@ További tudnivalók:
 - A natív PostgreSQL típusok a típus helyére kerülnek: `VarChar(200)`, `Char(2)`, `SmallInt`, `Numeric(8, 2)`, `Date`, `Uuid` stb.
 - A `VarChar(n)`, `Char(n)` és `Numeric(p, s)` mezők TypeScript típusa nem sima `string`, hanem egy "megjelölt" típus (pl. `Varchar<200>`). Szöveges értéket csak típuskényszerítéssel lehet nekik átadni (lásd lent). Ha nincs szükség hosszkorlátra, egyszerűbb a `String` (`text` oszlop).
 - A `@unique`-ból valódi `UNIQUE` megszorítás lesz az adatbázisban.
-- A kódban a modellek elérése: `db.orm.public.User`, `db.orm.public.Post`, `db.orm.public.Film` (`public` a PostgreSQL séma neve).
-- A `@@map("users")` a tábla nevét adja meg (a modell neve `User`, a táblaé `users`).
+- A kódban a modellek elérése: `db.orm.public.Author`, `db.orm.public.Article` (`public` a PostgreSQL séma neve).
+- A `@@map("author")` a tábla nevét adja meg (a modell neve `Author`, a táblaé `author`). A táblanevek **egyes számúak** (`author`, `article`), kisbetűsek, `snake_case`-esek; a REST végpontok URL-je ettől függetlenül többes számú (`/api-examples/articles`).
+- Azért `author` és nem `user` a tábla neve, mert a `user` a PostgreSQL-ben foglalt szó: kézzel írt SQL-ben mindig idézőjelbe kellene tenni (`SELECT * FROM "user"`), idézőjel nélkül a `SELECT * FROM user` nem a táblát kérdezi le, hanem az aktuális adatbázis-felhasználó nevét adja vissza.
 - A `@@rls` bekapcsolja a táblán a sorszintű biztonságot (row-level security, RLS). Szabály (policy) nélkül ez mindent tilt az olyan felhasználóknak, akik nem a tábla tulajdonosai; a mi alkalmazásunk a táblák tulajdonosaként (azzal a felhasználóval, amelyik a `db init`-tel létrehozta őket) csatlakozik, rá az RLS nem vonatkozik, így a programban nem okoz változást. A **Supabase** miatt kell: ott az új táblákon az RLS automatikusan bekapcsol, és `@@rls` nélkül a `db init` ki akarná kapcsolni (`MIGRATION.PLANNING_FAILED ... Disable row-level security`), lásd 6.5. Helyi szerveren és Neonon sem árt. Ha egy már meglévő (korábban `@@rls` nélkül létrehozott) adatbázist használsz, futtasd le egyszer a `npm run db:update`-et: ez csak bekapcsolja az RLS-t a táblákon, az adatokhoz nem nyúl.
-- A `@map("created_at")` az oszlop nevét adja meg: a kódban a mező `createdAt` (camelCase), az adatbázisban az oszlop `created_at` (snake_case). `@map` nélkül az oszlop neve is `createdAt` lenne, amit a PostgreSQL-ben minden kézzel írt SQL-ben idézőjelbe kellene tenni (`SELECT "createdAt" FROM users`), mert az idézőjel nélküli neveket kisbetűsre alakítja. A `snake_case` oszlopnév idézőjel nélkül is működik, és a `contract infer` is ezt a párosítást adja vissza.
-- Egy már meglévő adatbázisban az oszlop átnevezését (`@map` hozzáadása vagy módosítása) a Prisma nem ismeri fel átnevezésként: a `db update` törölné a régi oszlopot és újat hozna létre, az adatok elvesznének. A sablonnál ilyenkor egyszerűbb a táblákat törölni (pl. pgAdminban: `DROP TABLE posts, users, films;`), majd `npm run db:setup`: a `db init` újra létrehozza a táblákat és felülírja a régi aláírást, a seed pedig újratölti az adatokat.
+- A `@map("created_at")` az oszlop nevét adja meg: a kódban a mező `createdAt` (camelCase), az adatbázisban az oszlop `created_at` (snake_case). `@map` nélkül az oszlop neve is `createdAt` lenne, amit a PostgreSQL-ben minden kézzel írt SQL-ben idézőjelbe kellene tenni (`SELECT "createdAt" FROM article`), mert az idézőjel nélküli neveket kisbetűsre alakítja. A `snake_case` oszlopnév idézőjel nélkül is működik, és a `contract infer` is ezt a párosítást adja vissza.
+- Egy már meglévő adatbázisban az oszlop átnevezését (`@map` hozzáadása vagy módosítása) a Prisma nem ismeri fel átnevezésként: a `db update` törölné a régi oszlopot és újat hozna létre, az adatok elvesznének. A sablonnál ilyenkor egyszerűbb a táblákat törölni (pl. pgAdminban: `DROP TABLE article, author;`), majd `npm run db:setup`: a `db init` újra létrehozza a táblákat és felülírja a régi aláírást, a seed pedig újratölti az adatokat.
 
 **Dátumtípusok.** A dátumokhoz a `JsDate` végű típusokat használjuk, ezek JavaScript `Date` objektumként érkeznek, a JSON válaszban pedig ISO dátumszövegként (pl. `"2026-09-27T15:15:29.257Z"`) jelennek meg:
 
@@ -1059,7 +1049,7 @@ Amikor az adatbázis **már jó**, csak a Prisma nem tudja, hogy melyik contract
 Ha az adatbázisból hiányzik valami, amit a contract leír, a `db sign` nem ír alá, hanem hibát ad, pl.:
 
 ```
-[error] missing: database/public/films/column:hossz
+[error] missing: database/public/article/column:hossz
 [error] CONTRACT.SCHEMA_VERIFICATION_FAILED: Database schema does not satisfy contract (1 failure)
 ```
 
@@ -1080,7 +1070,7 @@ Ilyenkor a `db update` kell. Ha fordítva, az adatbázisban van több (pl. egy o
 
 ## 11. Minta adatok feltöltése (seed) ./prisma/seed.ts
 
-A Prisma 8-ban a kapcsolódó rekordok egy lépésben (beágyazva) még nem hozhatók létre (`posts: { create: [...] }` → `ORM.COLUMN_UNKNOWN` hiba). Előbb a hivatkozott rekordot (a felhasználót) kell létrehozni, utána a hivatkozókat (a bejegyzéseket) az idegen kulccsal (`authorId`).
+A Prisma 8-ban a kapcsolódó rekordok egy lépésben (beágyazva) még nem hozhatók létre (`articles: { create: [...] }` → `ORM.COLUMN_UNKNOWN` hiba). Előbb a hivatkozott rekordot (a szerzőt) kell létrehozni, utána a hivatkozókat (a cikkeket) az idegen kulccsal (`authorId`).
 
 ```ts
 import { db } from "./db";
@@ -1088,19 +1078,14 @@ import { db } from "./db";
 async function main() {
   // minden tábla kiürítése, és az id sorozatok visszaállítása 1-re (nyers SQL, táblanevekkel)
   await db.query(
-    db.raw.sql`TRUNCATE TABLE posts, users, films RESTART IDENTITY`.affectedCount().build(),
+    db.raw.sql`TRUNCATE TABLE article, author RESTART IDENTITY`.affectedCount().build(),
   );
 
-  await db.orm.public.Film.createAll([
-    { title: "A Pál utcai fiúk", content: "ifjúsági" },
-    { title: "Egri csillagok", content: "történelmi" },
-  ]);
-
-  // előbb a felhasználó, utána a posztjai (authorId)
-  const anna = await db.orm.public.User.create({ email: "anna@iskola.hu", name: "Kiss Anna" });
-  await db.orm.public.Post.createAll([
-    { title: "Első bejegyzés", content: "Helló világ!", authorId: anna.id },
-    { title: "Második bejegyzés", authorId: anna.id },
+  // előbb a szerző, utána a cikkei (authorId)
+  const anna = await db.orm.public.Author.create({ email: "anna@iskola.hu", name: "Kiss Anna" });
+  await db.orm.public.Article.createAll([
+    { title: "Első cikk", content: "Helló világ!", authorId: anna.id },
+    { title: "Második cikk", authorId: anna.id },
   ]);
 
   await db.close();
@@ -1116,118 +1101,95 @@ Futtatás:
 
 > npm run db:seed<br>
 
-**Miért `TRUNCATE` és nem `deleteAll()`?** A `.where({}).deleteAll()` csak a sorokat törli, az `id` sorozat (sequence) ott folytatódik, ahol abbahagyta: a második seed után a filmek id-je már 19–36 lenne, és a `/api/films/1` 404-et adna. A `TRUNCATE ... RESTART IDENTITY` egyszerre üríti ki a táblákat és állítja vissza az id-ket 1-re. Mivel nyers SQL, az adatbázisbeli táblaneveket (`posts`, `users`, `films`) kell használni, és mindhárom táblát egy utasításban kell megadni, mert a `posts` hivatkozik a `users` táblára (külön-külön a `users` kiürítése idegen kulcs hibát adna).
+**Miért `TRUNCATE` és nem `deleteAll()`?** A `.where({}).deleteAll()` csak a sorokat törli, az `id` sorozat (sequence) ott folytatódik, ahol abbahagyta: a második seed után a cikkek id-je már 21–40 lenne, és az `/api-examples/articles/1` 404-et adna. A `TRUNCATE ... RESTART IDENTITY` egyszerre üríti ki a táblákat és állítja vissza az id-ket 1-re. Mivel nyers SQL, az adatbázisbeli táblaneveket (`article`, `author`) kell használni, és a két táblát egy utasításban kell megadni, mert az `article` hivatkozik az `author` táblára (külön az `author` kiürítése idegen kulcs hibát adna).
 
 Ellenőrzés (pl. egy végpontban vagy scriptben):
 
 ```ts
-// felhasználók a bejegyzéseikkel
-await db.orm.public.User.include("posts").all();
-// bejegyzések a szerzőjükkel
-await db.orm.public.Post.include("author").all();
+// szerzők a cikkeikkel
+await db.orm.public.Author.include("articles").all();
+// cikkek a szerzőjükkel
+await db.orm.public.Article.include("author").all();
 ```
 
 ## 12. Példa végpontok
 
-A Prisma 8 láncolt API-t használ: a modellből indulunk (`db.orm.public.Film`), hozzáadjuk a szűrést (`where`), rendezést (`orderBy`) stb., a végén egy lezáró metódus (`all`, `first`, `create`, `update`, `delete`) futtatja a lekérdezést. Az `update` és a `delete` előtt mindig kell `where`.
+A Prisma 8 láncolt API-t használ: a modellből indulunk (`db.orm.public.Article`), hozzáadjuk a szűrést (`where`), rendezést (`orderBy`) stb., a végén egy lezáró metódus (`all`, `first`, `create`, `update`, `delete`) futtatja a lekérdezést. Az `update` és a `delete` előtt mindig kell `where`.
 
-./app/api/filmek/route.ts
+A sablon CRUD végpontjai az `Article` modellhez tartoznak (az 1:N kapcsolat "N" oldala, ebben van az idegen kulcs):
+
+| Végpont                                                    | Fájl                                        | Művelet                                 |
+| ---------------------------------------------------------- | ------------------------------------------- | --------------------------------------- |
+| `GET /api-examples/articles`                               | `app/api-examples/articles/route.ts`        | összes cikk a szerzőjükkel              |
+| `POST /api-examples/articles`                              | `app/api-examples/articles/route.ts`        | új cikk (201)                           |
+| `GET /api-examples/articles/1`                             | `app/api-examples/articles/[id]/route.ts`   | egy cikk a szerzőjével (404, ha nincs)  |
+| `PATCH /api-examples/articles/1`                           | `app/api-examples/articles/[id]/route.ts`   | cikk módosítása (csak a megadott mezők) |
+| `DELETE /api-examples/articles/1`                          | `app/api-examples/articles/[id]/route.ts`   | cikk törlése (204)                      |
+| `GET /api-examples/articles/search?title=film&author=anna` | `app/api-examples/articles/search/route.ts` | szűrés a kapcsolat mindkét oldalára     |
+
+Egyszerű hibakezelés: az adatbázis hibái (`sqlState`-tel) 400-as választ adnak, minden más hiba 500-as lesz:
 
 ```ts
-import { NextRequest, NextResponse } from "next/server";
 import db from "@/prisma/db";
-
-export async function GET() {
-  const filmek = await db.orm.public.Film.orderBy((f) => f.title.asc()).all();
-  return NextResponse.json(filmek);
-}
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
-  const { title, content } = await request.json();
   try {
-    const film = await db.orm.public.Film.create({ title, content });
-    return NextResponse.json(film, { status: 201 });
+    const body = await request.json();
+    const newOne = await db.orm.public.Article.create(body);
+    return NextResponse.json(newOne, { status: 201 });
   } catch (error) {
-    // 23505: egyedi (@unique) megszorítás megsértése
-    if (error instanceof Error && "sqlState" in error && error.sqlState === "23505") {
-      return NextResponse.json({ message: "Ilyen címmel már van film!" }, { status: 409 });
+    // console.log(error)
+    // adatbázis hiba (pl. 23505: egyedi érték ütközés, 23503: idegen kulcs hiba)
+    if (error instanceof Error && "sqlState" in error) {
+      return NextResponse.json(
+        { message: error.message, sqlState: error.sqlState },
+        { status: 400 },
+      );
     }
     throw error;
   }
 }
 ```
 
-./app/api/filmek/[id]/route.ts
+> A Prisma 8 hibaobjektumán (`SqlQueryError`) nincs `code` mező, csak `sqlState` (a PostgreSQL hibakódja).
+
+**Feltétel az 1:N kapcsolat mindkét oldalára** (`app/api-examples/articles/search/route.ts`): azok a cikkek, amelyek címében szerepel a `title`, **és** a szerzőjük (`Author`) nevében szerepel az `author`. A kapcsolódó modellre a kapcsolat mezőjén (`author`) keresztül, a `some(...)` metódussal lehet feltételt adni; a két `where` között ÉS kapcsolat van. Az `ilike` a kis- és nagybetűt nem különbözteti meg.
 
 ```ts
-import { NextRequest, NextResponse } from "next/server";
-import db from "@/prisma/db";
-
-type Params = { params: Promise<{ id: string }> };
-
-export async function GET(_request: NextRequest, { params }: Params) {
-  const id = Number((await params).id);
-  if (Number.isNaN(id)) return NextResponse.json({ message: "Hibás azonosító!" }, { status: 400 });
-
-  const film = await db.orm.public.Film.where({ id }).first();
-  if (!film) return NextResponse.json({ message: "Nincs ilyen film!" }, { status: 404 });
-  return NextResponse.json(film);
-}
-
-export async function DELETE(_request: NextRequest, { params }: Params) {
-  const id = Number((await params).id);
-  if (Number.isNaN(id)) return NextResponse.json({ message: "Hibás azonosító!" }, { status: 400 });
-
-  // nem létező rekordnál a delete (és az update) nem dob hibát, hanem null-t ad vissza
-  const film = await db.orm.public.Film.where({ id }).delete();
-  if (!film) return NextResponse.json({ message: "Nincs ilyen film!" }, { status: 404 });
-  return new NextResponse(null, { status: 204 });
-}
+const data = await db.orm.public.Article.include("author")
+  .where((a) => a.title.ilike(`%${title}%`)) // feltétel a cikkre (Article)
+  .where((a) => a.author.some((u) => u.name.ilike(`%${author}%`))) // feltétel a szerzőre (Author)
+  .orderBy((a) => a.title.asc())
+  .all();
 ```
+
+A másik irányból ugyanez: `db.orm.public.Author.where((u) => u.articles.some((a) => a.title.ilike("%film%"))).all()` – azok a szerzők, akiknek van olyan cikkük, amelynek a címében szerepel a "film" (`every(...)`: minden cikkükre igaz, `none(...)`: egyikre sem).
 
 Gyakori műveletek (Prisma 7 → Prisma 8):
 
-| Prisma 7                                 | Prisma 8                                                           |
-| ---------------------------------------- | ------------------------------------------------------------------ |
-| `prisma.film.findMany()`                 | `db.orm.public.Film.all()`                                         |
-| `findMany({ where: { ev: 1968 } })`      | `db.orm.public.Film.where({ ev: 1968 }).all()`                     |
-| `findUnique({ where: { id } })`          | `db.orm.public.Film.where({ id }).first()` (nincs találat: `null`) |
-| `orderBy: { title: "asc" }`              | `.orderBy((f) => f.title.asc())`                                   |
-| `take` / `skip`                          | `.limit(n)` / `.offset(n)`                                         |
-| `select: { title: true }`                | `.select("id", "title")`                                           |
-| `include: { mufaj: true }`               | `.include("mufaj")`                                                |
-| `where: { title: { contains: "egri" } }` | `.where((f) => f.title.like("%egri%"))`                            |
-| `create({ data: {...} })`                | `db.orm.public.Film.create({ ... })` (nincs `data:` csomagolás)    |
-| `createMany({ data: [...] })`            | `db.orm.public.Film.createAll([...])`                              |
-| `update({ where: { id }, data: {...} })` | `db.orm.public.Film.where({ id }).update({ ... })`                 |
-| `delete({ where: { id } })`              | `db.orm.public.Film.where({ id }).delete()`                        |
-| `updateMany` / `deleteMany`              | `.where(...).updateAll({ ... })` / `.where(...).deleteAll()`       |
-| `count()`                                | `.aggregate((a) => ({ db: a.count() }))`                           |
-| hiba `P2002` (egyedi érték ütközés)      | `sqlState === "23505"`                                             |
-| hiba `P2003` (idegen kulcs)              | `sqlState === "23503"`                                             |
-| hiba `P2025` (nincs ilyen rekord)        | az `update` / `delete` `null`-t ad vissza                          |
+| Prisma 7                                 | Prisma 8                                                              |
+| ---------------------------------------- | --------------------------------------------------------------------- |
+| `prisma.article.findMany()`              | `db.orm.public.Article.all()`                                         |
+| `findMany({ where: { authorId: 1 } })`   | `db.orm.public.Article.where({ authorId: 1 }).all()`                  |
+| `findUnique({ where: { id } })`          | `db.orm.public.Article.where({ id }).first()` (nincs találat: `null`) |
+| `orderBy: { title: "asc" }`              | `.orderBy((a) => a.title.asc())`                                      |
+| `take` / `skip`                          | `.limit(n)` / `.offset(n)`                                            |
+| `select: { title: true }`                | `.select("id", "title")`                                              |
+| `include: { author: true }`              | `.include("author")`                                                  |
+| `where: { title: { contains: "film" } }` | `.where((a) => a.title.like("%film%"))`                               |
+| `where: { author: { name: { ... } } }`   | `.where((a) => a.author.some((u) => u.name.like("%anna%")))`          |
+| `create({ data: {...} })`                | `db.orm.public.Article.create({ ... })` (nincs `data:` csomagolás)    |
+| `createMany({ data: [...] })`            | `db.orm.public.Article.createAll([...])`                              |
+| `update({ where: { id }, data: {...} })` | `db.orm.public.Article.where({ id }).update({ ... })`                 |
+| `delete({ where: { id } })`              | `db.orm.public.Article.where({ id }).delete()`                        |
+| `updateMany` / `deleteMany`              | `.where(...).updateAll({ ... })` / `.where(...).deleteAll()`          |
+| `count()`                                | `.aggregate((a) => ({ db: a.count() }))`                              |
+| hiba `P2002` (egyedi érték ütközés)      | `sqlState === "23505"`                                                |
+| hiba `P2003` (idegen kulcs)              | `sqlState === "23503"`                                                |
+| hiba `P2025` (nincs ilyen rekord)        | az `update` / `delete` `null`-t ad vissza                             |
 
-./tests.http (VS Code REST Client, a projekt gyökerében)
-
-```http
-### Összes film
-GET http://localhost:3000/api/filmek
-
-### Új film
-POST http://localhost:3000/api/filmek
-Content-Type: application/json
-
-{
-  "title": "Kincskereső kisködmön",
-  "content": "ifjúsági"
-}
-
-### Egy film
-GET http://localhost:3000/api/filmek/1
-
-### Film törlése
-DELETE http://localhost:3000/api/filmek/1
-```
+A kérések a `tests.http` állományban vannak (VS Code REST Client, a projekt gyökerében).
 
 ## 13. Adatok kezelése az adatbázisban
 
