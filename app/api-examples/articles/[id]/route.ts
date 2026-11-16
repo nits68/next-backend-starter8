@@ -19,9 +19,9 @@ export async function GET(_request: NextRequest, { params }: Params) {
     }
     return NextResponse.json(data);
   } catch (error) {
-    if (error instanceof Error && "sqlState" in error) {
+    if (error instanceof Error) {
       return NextResponse.json(
-        { message: error.message, sqlState: error.sqlState },
+        { message: error.message, sqlState: "sqlState" in error ? error.sqlState : "unknow" },
         { status: 400 },
       );
     }
@@ -48,9 +48,9 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     }
     return NextResponse.json(updated);
   } catch (error) {
-    if (error instanceof Error && "sqlState" in error) {
+    if (error instanceof Error) {
       return NextResponse.json(
-        { message: error.message, sqlState: error.sqlState },
+        { message: error.message, sqlState: "sqlState" in error ? error.sqlState : "unknow" },
         { status: 400 },
       );
     }
@@ -74,9 +74,9 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
     // sikeres törlés, nincs visszaadandó tartalom (204 No Content)
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    if (error instanceof Error && "sqlState" in error) {
+    if (error instanceof Error) {
       return NextResponse.json(
-        { message: error.message, sqlState: error.sqlState },
+        { message: error.message, sqlState: "sqlState" in error ? error.sqlState : "unknow" },
         { status: 400 },
       );
     }

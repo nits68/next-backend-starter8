@@ -9,9 +9,9 @@ export async function GET() {
       .all();
     return NextResponse.json(data);
   } catch (error) {
-    if (error instanceof Error && "sqlState" in error) {
+    if (error instanceof Error) {
       return NextResponse.json(
-        { message: error.message, sqlState: error.sqlState },
+        { message: error.message, sqlState: "sqlState" in error ? error.sqlState : "unknow" },
         { status: 400 },
       );
     }
@@ -26,9 +26,9 @@ export async function POST(request: NextRequest) {
     const newOne = await db.orm.public.Article.create(body);
     return NextResponse.json(newOne, { status: 201 });
   } catch (error) {
-    if (error instanceof Error && "sqlState" in error) {
+    if (error instanceof Error) {
       return NextResponse.json(
-        { message: error.message, sqlState: error.sqlState },
+        { message: error.message, sqlState: "sqlState" in error ? error.sqlState : "unknow" },
         { status: 400 },
       );
     }
