@@ -12,7 +12,7 @@ Két környezetre készül:
 A kód mindkét esetben ugyanaz, csak a `.env` állományban lévő connection string különbözik.
 
 > [!IMPORTANT]
-> **A Prisma 8 jelenleg release candidate.** 2026 novemberében `prisma@8.0.0-rc.33` (parancssori eszköz) és `@prisma/orm-postgres@8.0.0-rc.23` (könyvtár), a végleges kiadás hamarosan várható. Mivel az RC-k között az írásmód is változhat (lásd 7. pont: dátummezők), a sablon a Prisma- és a Next.js-csomagokat **pontos verzióra rögzíti** (`^` nélkül, lásd 2.2). A PostgreSQL-támogatás a legérettebb része, de a végleges kiadásig az API kis mértékben még változhat.
+> **A Prisma 8 jelenleg release candidate.** 2026 novemberében `prisma@8.0.0-rc.34` (parancssori eszköz) és `@prisma/orm-postgres@8.0.0-rc.24` (könyvtár), a végleges kiadás hamarosan várható. Mivel az RC-k között az írásmód is változhat (lásd 7. pont: dátummezők), a sablon a Prisma- és a Next.js-csomagokat **pontos verzióra rögzíti** (`^` nélkül, lásd 2.2). A PostgreSQL-támogatás a legérettebb része, de a végleges kiadásig az API kis mértékben még változhat.
 >
 > Követelmények:
 >
@@ -68,23 +68,23 @@ A parancssorban (`cmd`) ez akkor fordul elő, ha a mappába kisbetűvel lépsz b
 
 > npm i -D prettier typescript-eslint tsx<br>
 > npx prisma@latest orm init --yes --target postgres --authoring psl --schema-path prisma/contract.prisma --write-env<br>
-> npm i -E -D prisma@8.0.0-rc.33 @prisma/cli-engine@0.9.0<br>
-> npm i -E @prisma/orm-postgres@8.0.0-rc.23<br>
+> npm i -E -D prisma@8.0.0-rc.34 @prisma/cli-engine@0.10.0<br>
+> npm i -E @prisma/orm-postgres@8.0.0-rc.24<br>
 > npm install-scripts deny esbuild unrs-resolver<br>
 
-**Pontos verziók.** A Prisma 8 RC-i között nemcsak hibajavítások, hanem írásmód-változások is vannak (pl. a dátummezőknél, 7. pont). A `^` jel (pl. `^8.0.0-rc.23`) megengedné, hogy egy későbbi `npm install` magától újabb RC-t telepítsen, és a contract váratlanul hibás legyen. Ezért ez az öt csomag **pontos verzión** (`^` nélkül) szerepel a `package.json`-ban:
+**Pontos verziók.** A Prisma 8 RC-i között nemcsak hibajavítások, hanem írásmód-változások is vannak (pl. a dátummezőknél, 7. pont). A `^` jel (pl. `^8.0.0-rc.24`) megengedné, hogy egy későbbi `npm install` magától újabb RC-t telepítsen, és a contract váratlanul hibás legyen. Ezért ez az öt csomag **pontos verzión** (`^` nélkül) szerepel a `package.json`-ban:
 
 | Csomag                 | Verzió        | Miért rögzített?                                                      |
 | ---------------------- | ------------- | --------------------------------------------------------------------- |
-| `prisma`               | `8.0.0-rc.33` | release candidate, az RC-k között változhat az írásmód                |
-| `@prisma/orm-postgres` | `8.0.0-rc.23` | release candidate, a `prisma` CLI-vel együtt kell frissíteni          |
-| `@prisma/cli-engine`   | `0.9.0`       | a `prisma.config.ts` ebből importál, a CLI-vel együtt kell frissíteni |
+| `prisma`               | `8.0.0-rc.34` | release candidate, az RC-k között változhat az írásmód                |
+| `@prisma/orm-postgres` | `8.0.0-rc.24` | release candidate, a `prisma` CLI-vel együtt kell frissíteni          |
+| `@prisma/cli-engine`   | `0.10.0`      | a `prisma.config.ts` ebből importál, a CLI-vel együtt kell frissíteni |
 | `next`                 | `16.4.6`      | a `create-next-app` eleve pontos verzióval telepíti                   |
 | `eslint-config-next`   | `16.4.6`      | a `next`-tel azonos verziónak kell lennie                             |
 
 Az `-E` (`--save-exact`) kapcsoló írja a pontos verziót a `package.json`-ba (az `orm init` `^`-jellel telepít, ezért kell újra telepíteni a három Prisma-csomagot). A többi csomag (`dotenv`, `prettier`, `tsx`, `typescript` stb.) maradhat `^`-jellel.
 
-**Frissítés.** A Prisma-csomagokat tudatosan, együtt érdemes frissíteni, szintén `-E`-vel (pl. `npm i -E -D prisma@latest`, `npm i -E @prisma/orm-postgres@latest`). Előtte érdemes megnézni, hogy a két csomag ugyanazt a belső `@prisma/orm-toolchain` verziót használja-e (lásd 2.4), utána pedig `npx prisma contract emit` és ellenőrzés (`npm ls @prisma/orm-framework`, `npx tsc --noEmit`, `npm run build`).
+**Frissítés.** A Prisma-csomagokat tudatosan, együtt érdemes frissíteni, szintén `-E`-vel (pl. `npm i -E -D prisma@latest`, `npm i -E @prisma/orm-postgres@latest`). Előtte érdemes megnézni, hogy a két csomag ugyanazt a belső `@prisma/orm-toolchain` verziót használja-e (lásd 2.4). A `@prisma/cli-engine`-t arra a verzióra kell állítani, amelyet az új `prisma` CLI használ (`npm view prisma@<verzió> dependencies --json | Select-String cli-engine`), különben két példány kerül a projektbe (`npm ls @prisma/cli-engine`: csak egyféle verzió szerepeljen). Utána pedig `npx prisma contract emit` és ellenőrzés (`npm ls @prisma/orm-framework`, `npx tsc --noEmit`, `npm run build`).
 
 A csomagok:
 
@@ -140,7 +140,7 @@ Egyik script sem kell a működéshez: az `esbuild` (ezt a `tsx` használja) és
 
 ### 2.4 További telepítési figyelmeztetések, verzióeltérés (ERESOLVE, vulnerabilities)
 
-**`CLI.UNEXPECTED: Cannot use 'in' operator to search for 'kind' in typeChoice`** (a `prisma contract emit`, és vele a `postinstall` és a `build` futásakor): a `prisma` CLI és az `@prisma/orm-postgres` könyvtár nem illik össze, mert eltérő belső `@prisma/orm-toolchain` / `@prisma/orm-framework` verziót használnak. Ilyenkor a projektbe mindkettő bekerül, és a kettő nem érti egymás adatait. Ez pl. a `prisma@8.0.0-rc.29` (belül rc.21) és az `@prisma/orm-postgres@8.0.0-rc.22` párosnál fordult elő. A jelenlegi `prisma@8.0.0-rc.33` és `@prisma/orm-postgres@8.0.0-rc.23` ugyanazt a belső verziót (rc.23) használja, így nincs ilyen gond.
+**`CLI.UNEXPECTED: Cannot use 'in' operator to search for 'kind' in typeChoice`** (a `prisma contract emit`, és vele a `postinstall` és a `build` futásakor): a `prisma` CLI és az `@prisma/orm-postgres` könyvtár nem illik össze, mert eltérő belső `@prisma/orm-toolchain` / `@prisma/orm-framework` verziót használnak. Ilyenkor a projektbe mindkettő bekerül, és a kettő nem érti egymás adatait. Ez pl. a `prisma@8.0.0-rc.29` (belül rc.21) és az `@prisma/orm-postgres@8.0.0-rc.22` párosnál fordult elő. A jelenlegi `prisma@8.0.0-rc.34` és `@prisma/orm-postgres@8.0.0-rc.24` ugyanazt a belső verziót (rc.24) használja, így nincs ilyen gond.
 
 Frissítés előtt így ellenőrizhető, hogy a két csomag illik-e össze (a két sorban ugyanaz a verzió szerepeljen):
 
@@ -161,18 +161,20 @@ Ha a két csomag később ismét ugyanazt a verziót használja, az `overrides` 
 
 **`npm warn ERESOLVE overriding peer dependency ... @effect/vitest ... effect`:** a Prisma CLI korábbi verzióinál a felhős telepítő rész (Prisma Composer) belső függőségei között volt egy verzióütközés (az `alchemy` újabb `@effect/vitest`-et kért, mint amilyen `effect` verziót a Composer rögzített). Az npm feloldotta, ezért csak figyelmeztetés volt, és egy `overrides` bejegyzés a `package.json`-ban eltüntette. A `prisma@8.0.0-rc.27` óta már nem jelentkezik, ezért a bejegyzés törölve lett. Ha egy későbbi verziónál mégis előjönne a figyelmeztetés, az `"overrides": { "@effect/vitest": "<a Composer által kért verzió>" }` bejegyzéssel ismét elnémítható.
 
-**`9 moderate severity vulnerabilities`** (a `prisma@8.0.0-rc.33` és a `next@16.4.6` mellett): mind a 9 közepes súlyosságú, és fejlesztői eszközök függőségeiből jön, amelyeket csak fejlesztés közben, a saját gépen használunk: a `prisma` parancssori eszközéből (`@vercel/nft`, `glob`) és az ESLint-csomagokból (`typescript-eslint` és `@typescript-eslint/*`, `minimatch`). A `next@16.4.5` mellett még 12 volt, a korábbi RC-knél 13, ebből 8 magas súlyosságú. A futó alkalmazás függőségeiben (`next`, `@prisma/orm-postgres`, `dotenv`) nincs sérülékenység, ez így ellenőrizhető:
+**`27 high severity vulnerabilities`** (a `prisma@8.0.0-rc.34`, az `@prisma/orm-postgres@8.0.0-rc.24` és a `next@16.4.6` mellett, 2026. november): mind a 27 ugyanabból az egy hibából jön, a `picomatch` csomag ReDoS-sérülékenységéből ([GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf)). Ez a `picomatch` összes verzióját érinti, ezért jelenleg nincs olyan verzió, amelyre frissíteni lehetne. A `picomatch` fájlnév-minták (pl. `**/*.ts`) illesztésére szolgál, és a lista azért ilyen hosszú, mert minden csomag külön megjelenik, amely közvetve rá épül: a `prisma` parancssori eszköz (`@vercel/nft`, `alchemy`, Prisma Composer), az ESLint-csomagok (`typescript-eslint`, `eslint-config-next`) és az `@prisma/orm-postgres` is (`tinyglobby`-n keresztül). A hiba csak akkor jelent veszélyt, ha a mintát egy támadó adhatja meg; a sablonban a minták a csomagokban rögzítettek, a felhasználó által küldött adatok nem jutnak el hozzájuk. A futó alkalmazás függőségeit így lehet külön ellenőrizni:
 
 ```powershell
 npm audit --omit=dev
 ```
 
 ```
-found 0 vulnerabilities
+8 high severity vulnerabilities
 ```
 
+Ez a 8 tétel mind az `@prisma/orm-postgres` → `tinyglobby` → `picomatch` láncból jön (korábban, a `prisma@8.0.0-rc.33` / `@prisma/orm-postgres@8.0.0-rc.23` idején itt még `found 0 vulnerabilities` volt). Várhatóan egy újabb `picomatch`, majd az arra épülő Prisma-kiadás oldja meg.
+
 > [!WARNING]
-> Az `npm audit fix --force` parancsot **ne** futtasd: a "javítás" a `typescript-eslint` csomagot egy jóval régebbi verzióra (`8.72.1 => 8.36.0`, SemVer major változásként jelölve) állítaná vissza, amely peer dependency ütközést okoz az ESLint verziójával. A korábbi verzióknál ugyanez a parancs a `prisma` csomagot a 7-es verzióra (`prisma@7.10.1`), az `eslint-config-next`-et a Next.js 15-ös verziójához tartozóra (`eslint-config-next@15.5.29`) vitte vissza, ami a projektet elrontotta. A figyelmeztetések a Prisma 8 végleges kiadásával, a Prisma CLI frissítésekor várhatóan eltűnnek (`npm i -D prisma@latest`).
+> Se az `npm audit fix`, se az `npm audit fix --force` parancsot **ne** futtasd! Már a `--force` nélküli változat is egy régi fejlesztői buildre (`@prisma/orm-postgres@8.0.0-rc.9-dev.13`) állítaná vissza a Prisma könyvtárat. A `--force` ezen felül a `prisma` csomagot a 7-es verzióra (`prisma@7.10.1`), az `eslint-config-next`-et a Next.js 14-es verziójához tartozóra (`eslint-config-next@14.2.35`), a `typescript-eslint`-et pedig egy régebbi verzióra (`8.47.0`) vinné vissza, ami a projektet elrontja. A figyelmeztetések a `picomatch` javításával és az erre épülő csomagok frissítésével tűnnek el.
 
 ## 3. Prisma konfigurálása: ./prisma.config.ts
 
@@ -1227,7 +1229,7 @@ A kérések a `tests.http` állományban vannak (VS Code REST Client, a projekt 
 - **`Cannot find module 'prisma/config'`:** a `prisma.config.ts`-ben a `definePrismaConfig`-et a `@prisma/cli-engine` csomagból kell importálni (3. pont).
 - **`Cannot find module '.../prisma/contract.json'`:** elmaradt a `prisma contract emit`. A contract minden módosítása után futtatni kell, különben a TypeScript sem látja az új mezőket (a VS Code-ban néha **TypeScript: Restart TS Server** is kell).
 - **`MIGRATION.PLANNING_FAILED` … `Disable row-level security on "..." requires class "widening"`** (Supabase): a táblákon be van kapcsolva az RLS, a contractban nincs. Megoldás: `@@rls` a modellekre, lásd 6.5.
-- **`CONTRACT.MARKER_READ_FAILED` … `unsupported startup parameter in options: lc_monetary`** (Neon, a program vagy a seed futásakor): a `DATABASE_URL` a pooled (`-pooler`) címre mutat. A Prisma 8 rc.23 olyan kapcsolódási beállítást küld, amelyet a pooler nem fogad el; használd a direkt címet (6.3). Ha más szolgáltatónál (pl. a Supabase Transaction poolerével) jön ugyanez, ott is a pooler nélküli, illetve Session módú címet kell a `DATABASE_URL`-be írni.
+- **`CONTRACT.MARKER_READ_FAILED` … `unsupported startup parameter in options: lc_monetary`** (Neon, a program vagy a seed futásakor): a `DATABASE_URL` a pooled (`-pooler`) címre mutat. A Prisma 8 (rc.23 óta) olyan kapcsolódási beállítást küld, amelyet a pooler nem fogad el; használd a direkt címet (6.3). Ha más szolgáltatónál (pl. a Supabase Transaction poolerével) jön ugyanez, ott is a pooler nélküli, illetve Session módú címet kell a `DATABASE_URL`-be írni.
 - **`RUNTIME.TEMPORAL_UNAVAILABLE`:** a contractban `Temporal` dátumtípus (`TimestamptzTemporal`, `DateTemporal`, `DateTime(as: temporal)`) szerepel, lásd 7. pont.
 - **`CLI.UNEXPECTED: Cannot use 'in' operator to search for 'kind' in typeChoice`:** a `prisma` CLI és az `@prisma/orm-postgres` eltérő belső verziót használ. Megoldás: a `package.json` `overrides` bejegyzése (2.4 pont), majd `npm install`.
 - **`PSL_UNRESOLVED_REFERENCE ... was a field preset, and Prisma 8 removed field presets`:** a contractban régi írásmódú dátummező van (`temporal.updatedAtJsDate()`, `temporal.UpdatedAtJsDate`), a hibaüzenet megmondja az új alakot (7. pont).

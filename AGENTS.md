@@ -10,15 +10,15 @@ This is a **Next.js 16 REST API starter** (App Router route handlers, no UI) usi
 
 | Package                                  | Version          | Note                                       |
 | ---------------------------------------- | ---------------- | ------------------------------------------ |
-| `prisma` (CLI, devDependency)            | `8.0.0-rc.33`    | pinned, no `^`                             |
-| `@prisma/orm-postgres` (runtime library) | `8.0.0-rc.23`    | pinned, no `^`                             |
-| `@prisma/cli-engine`                     | `0.9.0`          | pinned, `prisma.config.ts` imports from it |
+| `prisma` (CLI, devDependency)            | `8.0.0-rc.34`    | pinned, no `^`                             |
+| `@prisma/orm-postgres` (runtime library) | `8.0.0-rc.24`    | pinned, no `^`                             |
+| `@prisma/cli-engine`                     | `0.10.0`         | pinned, `prisma.config.ts` imports from it |
 | `next` / `eslint-config-next`            | `16.4.6`         | pinned, must stay equal                    |
 | Node.js                                  | 22.18+ or 24.11+ |                                            |
 
-- **Do not change pinned versions**, add `^`, or run `npm audit fix --force` (it downgrades `typescript-eslint` to an old version with eslint peer conflicts; with earlier versions it downgraded `prisma` to v7 and broke the project).
-- Updating Prisma is a deliberate step: the `prisma` CLI and `@prisma/orm-postgres` must use the same internal `@prisma/orm-toolchain` version (check with `npm view <pkg>@<version> dependencies`). After updating, `npm ls @prisma/orm-framework` must show a single version. See README section 2.4.
-- The remaining `npm audit` warnings come from dev tooling only; `npm audit --omit=dev` must report 0.
+- **Do not change pinned versions**, add `^`, or run `npm audit fix` / `npm audit fix --force`. Even without `--force` it downgrades `@prisma/orm-postgres` to an old dev build (`8.0.0-rc.9-dev.13`). With `--force` it also downgrades `prisma` to v7, `eslint-config-next` to 14.x and `typescript-eslint` to an old version.
+- Updating Prisma is a deliberate step: the `prisma` CLI and `@prisma/orm-postgres` must use the same internal `@prisma/orm-toolchain` version (check with `npm view <pkg>@<version> dependencies`). Pin `@prisma/cli-engine` to the version the `prisma` CLI depends on. After updating, `npm ls @prisma/orm-framework` and `npm ls @prisma/cli-engine` must each show a single version. See README section 2.4.
+- `npm audit` currently reports 27 high, `npm audit --omit=dev` reports 8 high (Nov 2026). All of them come from one `picomatch` ReDoS advisory (GHSA-fc5q-39xc-vjpf) that affects every `picomatch` version, so there is no fix yet. The runtime path is `@prisma/orm-postgres` → `tinyglobby` → `picomatch`. Any other audit finding is new and must be reported to the user. See README section 2.4.
 
 ## Environment and commands
 

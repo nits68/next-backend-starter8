@@ -1,7 +1,7 @@
 # Dátum- és időkezelés: PostgreSQL ↔ Prisma 8 ↔ TypeScript ↔ JSON
 
 Összefoglaló táblázatok a dátum- és időtípusokhoz. Minden adatot a sablon verzióival
-(`@prisma/orm-postgres@8.0.0-rc.23`, `prisma@8.0.0-rc.33`, Node.js 24, PostgreSQL 18, a szerver
+(`@prisma/orm-postgres@8.0.0-rc.24`, `prisma@8.0.0-rc.34`, Node.js 24, PostgreSQL 18, a szerver
 időzónája `Europe/Budapest`) próbáltunk ki: contract → `db init` → `create()` → a visszakapott
 érték → `NextResponse.json()`.
 
