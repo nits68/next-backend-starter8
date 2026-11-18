@@ -27,7 +27,11 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     if (error instanceof Error) {
       return NextResponse.json(
-        { message: error.message, sqlState: "sqlState" in error ? error.sqlState : "unknow" },
+        {
+          message: error.message,
+          sqlState: "sqlState" in error ? error.sqlState : undefined,
+          constraint: "constraint" in error ? error.constraint : undefined,
+        },
         { status: 400 },
       );
     }

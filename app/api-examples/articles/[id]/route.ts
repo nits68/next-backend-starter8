@@ -21,7 +21,11 @@ export async function GET(_request: NextRequest, { params }: Params) {
   } catch (error) {
     if (error instanceof Error) {
       return NextResponse.json(
-        { message: error.message, sqlState: "sqlState" in error ? error.sqlState : "unknow" },
+        {
+          message: error.message,
+          sqlState: "sqlState" in error ? error.sqlState : undefined,
+          constraint: "constraint" in error ? error.constraint : undefined,
+        },
         { status: 400 },
       );
     }
@@ -50,7 +54,11 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   } catch (error) {
     if (error instanceof Error) {
       return NextResponse.json(
-        { message: error.message, sqlState: "sqlState" in error ? error.sqlState : "unknow" },
+        {
+          message: error.message,
+          sqlState: "sqlState" in error ? error.sqlState : undefined,
+          constraint: "constraint" in error ? error.constraint : undefined,
+        },
         { status: 400 },
       );
     }
@@ -76,7 +84,11 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
   } catch (error) {
     if (error instanceof Error) {
       return NextResponse.json(
-        { message: error.message, sqlState: "sqlState" in error ? error.sqlState : "unknow" },
+        {
+          message: error.message,
+          sqlState: "sqlState" in error ? error.sqlState : undefined,
+          constraint: "constraint" in error ? error.constraint : undefined,
+        },
         { status: 400 },
       );
     }

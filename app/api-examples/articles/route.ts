@@ -11,7 +11,11 @@ export async function GET() {
   } catch (error) {
     if (error instanceof Error) {
       return NextResponse.json(
-        { message: error.message, sqlState: "sqlState" in error ? error.sqlState : "unknow" },
+        {
+          message: error.message,
+          sqlState: "sqlState" in error ? error.sqlState : undefined,
+          constraint: "constraint" in error ? error.constraint : undefined,
+        },
         { status: 400 },
       );
     }
@@ -28,7 +32,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof Error) {
       return NextResponse.json(
-        { message: error.message, sqlState: "sqlState" in error ? error.sqlState : "unknow" },
+        {
+          message: error.message,
+          sqlState: "sqlState" in error ? error.sqlState : undefined,
+          constraint: "constraint" in error ? error.constraint : undefined,
+        },
         { status: 400 },
       );
     }
