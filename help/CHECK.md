@@ -30,7 +30,6 @@ model Ingatlan {
   ...
 
   @@check(expression: sql`ar > 0`, name: "ingatlan_ar_pozitiv")
-  @@rls
   @@map("ingatlan")
 }
 ```
@@ -289,7 +288,6 @@ model Ingatlan {
   @@check(expression: sql`kep_url LIKE 'https://%'`, name: "ingatlan_kep_https")
   @@check(expression: sql`hirdetes_datuma >= DATE '2000-01-01'`, name: "ingatlan_datum_min")
   @@index([kategoriaId], map: "ingatlan_kategoria_id_idx")
-  @@rls
   @@map("ingatlan")
 }
 ```

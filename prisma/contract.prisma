@@ -15,20 +15,30 @@ model Author {
   // connection field:
   articles  Article[]
 
+  // CHECK: simple e-mail format (something@something.something)
+  @@check(expression: sql`email LIKE '%_@_%._%'`, name: "author_email_format")
   @@map("author")
 }
 
 model Article {
-  id        Int               @id() @default(autoincrement())
-  authorId  Int               @map("author_id")
-  content   String?
-  createdAt TimestamptzJsDate @default(now()) @map("created_at")
-  title     String
-  updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
+  id          Int                @id() @default(autoincrement())
+  authorId    Int                @map("author_id")
+  content     String?
+  createdAt   TimestamptzJsDate  @default(now()) @map("created_at")
+  title       String
+  updatedAt   TimestamptzJsDate  @onCreate(now()) @onUpdate(now()) @map("updated_at")
+
+  published   Boolean?
+  rating      Int?
+  publishedAt TimestamptzJsDate? @map("published_at")
 
   // connection field:
-  author    Author            @relation(fields: [authorId], references: [id], map: "article_author_id_fkey")
+  author      Author             @relation(fields: [authorId], references: [id], map: "article_author_id_fkey")
 
-  @@index([authorId])  // Prisma dont have field-level indexes like SQL, so we need to create a model-level index for the foreign key field
+  // CHECK: the expression must use the database column names (published_at, not publishedAt)
+  @@check(expression: sql`rating BETWEEN 1 AND 5`, name: "article_rating_range")
+  // if the article is not published (published = false), it cannot have a publication date
+  @@check(expression: sql`published OR published_at IS NULL`, name: "article_published_date")
+  @@index([authorId])  // Prisma has no field-level indexes like SQL, so the foreign key field needs a model-level index
   @@map("article")
 }

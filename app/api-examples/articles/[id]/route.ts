@@ -45,6 +45,8 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     // a kérés törzsének kiolvasása és az id mező eltávolítása
     const body = await request.json();
     delete body.id; // az azonosítót a kérés törzséből nem engedjük átírni
+    // a JSON-ban szövegként érkező dátumot Date objektummá kell alakítani (TimestamptzJsDate)
+    if (body.publishedAt) body.publishedAt = new Date(body.publishedAt);
 
     const updated = await db.orm.public.Article.where({ id: id_article }).update(body);
     if (!updated) {

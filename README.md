@@ -775,15 +775,6 @@ DIRECT_URL="postgresql://postgres.<PROJEKT-AZONOSÍTÓ>:<JELSZÓ>@aws-0-<RÉGIÓ
 
 Az adatok a Supabase Dashboard **Table Editor** és **SQL Editor** nézetében is kezelhetők.
 
-**Sorszintű biztonság (RLS):** a Supabase az új táblákon automatikusan bekapcsolja az RLS-t, mert a `public` séma táblái a Supabase Data API-n (a nyilvános `anon` kulccsal) is elérhetők, és RLS nélkül bárki olvashatná, módosíthatná őket. Ezért a sablon contractjában minden modellen ott a `@@rls` (7. pont). Szabályok (policy) nélkül a Data API felől minden tiltva van, a mi alkalmazásunk viszont a táblák tulajdonosaként csatlakozik, így neki minden megengedett. Ha a contractból hiányzik a `@@rls`, a `db init` ezzel a hibával áll le:
-
-```
-✘ [MIGRATION.PLANNING_FAILED] Migration planning failed
-  why: Operation "Disable row-level security on "article"" requires class "widening", but policy allows only: additive
-```
-
-Megoldás: a modellekre `@@rls` (a sablonban már benne van), majd `npm run contract:emit` és újra `npm run db:setup` (vagy ha a táblák már léteznek: `npm run db:init`). Az RLS-t **ne kapcsold ki** a Supabase-en (és a `db update`-tel se), mert akkor a táblák a nyilvános kulccsal elérhetővé válnak.
-
 ## 7. Prisma contract létrehozása (minta modellek) ./prisma/contract.prisma
 
 Két minta modell: `Author` és `Article` (egy-a-többhöz kapcsolattal: egy szerzőnek több cikke lehet). Az `orm init` `User` és `Post` modellt hoz létre szöveges dátumtípusokkal: a `User` modellt nevezd át `Author`-ra (a `user` a PostgreSQL-ben foglalt szó, lásd lent), a `Post` modellt `Article`-re (a `Post` név könnyen összekeverhető a HTTP `POST` metódussal), a dátumtípusokat pedig írd át a `JsDate`-es típusokra, hogy `Date` objektumként kapd a dátumokat:
@@ -801,7 +792,6 @@ model Author {
   updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
 
   @@map("author")
-  @@rls
 }
 
 model Article {
@@ -814,7 +804,6 @@ model Article {
   updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
 
   @@map("article")
-  @@rls
 }
 ```
 
@@ -833,7 +822,6 @@ További tudnivalók:
 - A kódban a modellek elérése: `db.orm.public.Author`, `db.orm.public.Article` (`public` a PostgreSQL séma neve).
 - A `@@map("author")` a tábla nevét adja meg (a modell neve `Author`, a táblaé `author`). A táblanevek **egyes számúak** (`author`, `article`), kisbetűsek, `snake_case`-esek; a REST végpontok URL-je ettől függetlenül többes számú (`/api-examples/articles`).
 - Azért `author` és nem `user` a tábla neve, mert a `user` a PostgreSQL-ben foglalt szó: kézzel írt SQL-ben mindig idézőjelbe kellene tenni (`SELECT * FROM "user"`), idézőjel nélkül a `SELECT * FROM user` nem a táblát kérdezi le, hanem az aktuális adatbázis-felhasználó nevét adja vissza.
-- A `@@rls` bekapcsolja a táblán a sorszintű biztonságot (row-level security, RLS). Szabály (policy) nélkül ez mindent tilt az olyan felhasználóknak, akik nem a tábla tulajdonosai; a mi alkalmazásunk a táblák tulajdonosaként (azzal a felhasználóval, amelyik a `db init`-tel létrehozta őket) csatlakozik, rá az RLS nem vonatkozik, így a programban nem okoz változást. A **Supabase** miatt kell: ott az új táblákon az RLS automatikusan bekapcsol, és `@@rls` nélkül a `db init` ki akarná kapcsolni (`MIGRATION.PLANNING_FAILED ... Disable row-level security`), lásd 6.5. Helyi szerveren és Neonon sem árt. Ha egy már meglévő (korábban `@@rls` nélkül létrehozott) adatbázist használsz, futtasd le egyszer a `npm run db:update`-et: ez csak bekapcsolja az RLS-t a táblákon, az adatokhoz nem nyúl.
 - A `@map("created_at")` az oszlop nevét adja meg: a kódban a mező `createdAt` (camelCase), az adatbázisban az oszlop `created_at` (snake_case). `@map` nélkül az oszlop neve is `createdAt` lenne, amit a PostgreSQL-ben minden kézzel írt SQL-ben idézőjelbe kellene tenni (`SELECT "createdAt" FROM article`), mert az idézőjel nélküli neveket kisbetűsre alakítja. A `snake_case` oszlopnév idézőjel nélkül is működik, és a `contract infer` is ezt a párosítást adja vissza.
 - Egy már meglévő adatbázisban az oszlop átnevezését (`@map` hozzáadása vagy módosítása) a Prisma nem ismeri fel átnevezésként: a `db update` törölné a régi oszlopot és újat hozna létre, az adatok elvesznének. A sablonnál ilyenkor egyszerűbb a táblákat törölni (pl. pgAdminban: `DROP TABLE article, author;`), majd `npm run db:setup`: a `db init` újra létrehozza a táblákat és felülírja a régi aláírást, a seed pedig újratölti az adatokat.
 
@@ -1228,7 +1216,6 @@ A kérések a `tests.http` állományban vannak (VS Code REST Client, a projekt 
 - **`CLI.CONFIG_UNREADABLE ... config loading resolved E:/... instead of e:\...`:** a parancssor (`cmd`) kisbetűs meghajtójellel áll a mappában. Futtasd a parancsot PowerShellből (2.1 pont), vagy lépj be újra nagybetűvel: `cd /d E:\...`.
 - **`Cannot find module 'prisma/config'`:** a `prisma.config.ts`-ben a `definePrismaConfig`-et a `@prisma/cli-engine` csomagból kell importálni (3. pont).
 - **`Cannot find module '.../prisma/contract.json'`:** elmaradt a `prisma contract emit`. A contract minden módosítása után futtatni kell, különben a TypeScript sem látja az új mezőket (a VS Code-ban néha **TypeScript: Restart TS Server** is kell).
-- **`MIGRATION.PLANNING_FAILED` … `Disable row-level security on "..." requires class "widening"`** (Supabase): a táblákon be van kapcsolva az RLS, a contractban nincs. Megoldás: `@@rls` a modellekre, lásd 6.5.
 - **`CONTRACT.MARKER_READ_FAILED` … `unsupported startup parameter in options: lc_monetary`** (Neon, a program vagy a seed futásakor): a `DATABASE_URL` a pooled (`-pooler`) címre mutat. A Prisma 8 (rc.23 óta) olyan kapcsolódási beállítást küld, amelyet a pooler nem fogad el; használd a direkt címet (6.3). Ha más szolgáltatónál (pl. a Supabase Transaction poolerével) jön ugyanez, ott is a pooler nélküli, illetve Session módú címet kell a `DATABASE_URL`-be írni.
 - **`RUNTIME.TEMPORAL_UNAVAILABLE`:** a contractban `Temporal` dátumtípus (`TimestamptzTemporal`, `DateTemporal`, `DateTime(as: temporal)`) szerepel, lásd 7. pont.
 - **`CLI.UNEXPECTED: Cannot use 'in' operator to search for 'kind' in typeChoice`:** a `prisma` CLI és az `@prisma/orm-postgres` eltérő belső verziót használ. Megoldás: a `package.json` `overrides` bejegyzése (2.4 pont), majd `npm install`.

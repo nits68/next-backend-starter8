@@ -27,6 +27,8 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    // a JSON-ban szövegként érkező dátumot Date objektummá kell alakítani (TimestamptzJsDate)
+    if (body.publishedAt) body.publishedAt = new Date(body.publishedAt);
     const newOne = await db.orm.public.Article.create(body);
     return NextResponse.json(newOne, { status: 201 });
   } catch (error) {

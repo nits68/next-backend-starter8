@@ -39,6 +39,39 @@ Content-Type: application/json
   "authorId": 999
 }
 
+### Új cikk az opcionális mezőkkel (published, rating, publishedAt)
+POST http://localhost:3000/api-examples/articles
+Content-Type: application/json
+
+{
+  "title": "Közzétett cikk",
+  "authorId": 3,
+  "published": true,
+  "rating": 4,
+  "publishedAt": "2026-11-21T10:00:00Z"
+}
+
+### CHECK hiba: rating nem 1-5 közötti (400, sqlState: 23514)
+POST http://localhost:3000/api-examples/articles
+Content-Type: application/json
+
+{
+  "title": "Hibás értékelés",
+  "authorId": 3,
+  "rating": 10
+}
+
+### CHECK hiba: nincs közzétéve, mégis van dátuma (400, sqlState: 23514)
+POST http://localhost:3000/api-examples/articles
+Content-Type: application/json
+
+{
+  "title": "Hibás közzététel",
+  "authorId": 3,
+  "published": false,
+  "publishedAt": "2026-11-21T10:00:00Z"
+}
+
 ### Cikk módosítása
 PATCH http://localhost:3000/api-examples/articles/1
 Content-Type: application/json

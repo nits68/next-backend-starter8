@@ -81,7 +81,6 @@ updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
 Do not use `@updatedAt`, `temporal.updatedAtJsDate()` or `temporal.UpdatedAtJsDate` (removed in rc.22).
 
 - Relations: `author Author @relation(fields: [authorId], references: [id])` + `authorId Int`, and the back relation `articles Article[]`.
-- Every model has `@@rls` (row-level security on, no policies). Keep it and add it to new models: Supabase enables RLS on new tables automatically, and without `@@rls` `db init` fails with `MIGRATION.PLANNING_FAILED ... Disable row-level security ... requires class "widening"`. The app connects as the table owner, so RLS does not affect it. Never disable RLS on Supabase (the tables would become readable/writable with the public anon key).
 - After **every** contract change: `npm run contract:emit`, then `npm run db:update` (dev) or `migration:plan` + `migrate`.
 
 ## Database access (Prisma 8 query API)
