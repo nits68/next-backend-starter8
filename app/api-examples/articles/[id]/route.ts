@@ -8,12 +8,12 @@ type Params = { params: Promise<{ id: string }> };
 export async function GET(_request: NextRequest, { params }: Params) {
   try {
     // dinamikus paraméter kiolvasása és ellenőrzése
-    const { id } = await params;
-    const id_article = Number(id);
-    if (Number.isNaN(id_article)) {
+    const p = await params;
+    const id = Number(p.id);
+    if (Number.isNaN(id)) {
       return NextResponse.json({ message: "Hibás azonosító!" }, { status: 400 });
     }
-    const data = await db.orm.public.Article.include("author").where({ id: id_article }).first();
+    const data = await db.orm.public.Article.include("author").where({ id }).first();
     if (!data) {
       return NextResponse.json({ message: "Nincs ilyen cikk!" }, { status: 404 });
     }
@@ -37,9 +37,9 @@ export async function GET(_request: NextRequest, { params }: Params) {
 export async function PATCH(request: NextRequest, { params }: Params) {
   try {
     // dinamikus paraméter kiolvasása és ellenőrzése
-    const { id } = await params;
-    const id_article = Number(id);
-    if (Number.isNaN(id_article)) {
+    const p = await params;
+    const id = Number(p.id);
+    if (Number.isNaN(id)) {
       return NextResponse.json({ message: "Hibás azonosító!" }, { status: 400 });
     }
     // a kérés törzsének kiolvasása és az id mező eltávolítása
@@ -48,7 +48,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     // a JSON-ban szövegként érkező dátumot Date objektummá kell alakítani (TimestamptzJsDate)
     if (body.publishedAt) body.publishedAt = new Date(body.publishedAt);
 
-    const updated = await db.orm.public.Article.where({ id: id_article }).update(body);
+    const updated = await db.orm.public.Article.where({ id }).update(body);
     if (!updated) {
       return NextResponse.json({ message: "Nincs ilyen cikk!" }, { status: 404 });
     }
@@ -72,12 +72,12 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 export async function DELETE(_request: NextRequest, { params }: Params) {
   try {
     // dinamikus paraméter kiolvasása és ellenőrzése
-    const { id } = await params;
-    const id_article = Number(id);
-    if (Number.isNaN(id_article)) {
+    const p = await params;
+    const id = Number(p.id);
+    if (Number.isNaN(id)) {
       return NextResponse.json({ message: "Hibás azonosító!" }, { status: 400 });
     }
-    const deleted = await db.orm.public.Article.where({ id: id_article }).delete();
+    const deleted = await db.orm.public.Article.where({ id }).delete();
     if (!deleted) {
       return NextResponse.json({ message: "Nincs ilyen cikk!" }, { status: 404 });
     }

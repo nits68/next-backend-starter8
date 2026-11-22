@@ -151,7 +151,7 @@ if (error instanceof Error && "sqlState" in error && error.sqlState === "23505")
 Follow the existing examples and the `.vscode/react-next.code-snippets`:
 
 - `import { NextRequest, NextResponse } from "next/server";`
-- Dynamic params are a Promise in Next.js 16: `{ params }: { params: Promise<{ id: string }> }`, `const id = Number((await params).id);`
+- Dynamic params are a Promise in Next.js 16: `{ params }: { params: Promise<{ id: string }> }`, `const p = await params;`, `const id = Number(p.id);`
 - Invalid id (`Number.isNaN(id)`) → `400`; not found (`null`) → `404`; created → `201`; deleted → `204` with `new NextResponse(null, { status: 204 })`.
 - Do not let the request body overwrite the primary key on update (`delete body.id`).
 - User-facing messages are in **Hungarian** (e.g. `{ message: "Nincs ilyen rekord!" }`).
