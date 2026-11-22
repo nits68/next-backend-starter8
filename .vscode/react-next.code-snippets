@@ -188,5 +188,25 @@
       "return NextResponse.json({ message: \"Adatbázis hiba!\" }, { status: 500 });$0"
     ],
     "description": "Prisma 8: general error handling inside a catch (error) block"
+  },
+  "Request body": {
+    "scope": "javascript,typescript",
+    "prefix": "íbody",
+    "body": ["const body = await request.json();$0"],
+    "description": "Read the JSON request body"
+  },
+  "Dynamic params": {
+    "scope": "javascript,typescript",
+    "prefix": "íparams",
+    "body": ["const p = await params;$0"],
+    "description": "Read the dynamic route parameters"
+  },
+  "Search params": {
+    "scope": "javascript,typescript",
+    "prefix": "ísearchParams",
+    "body": [
+      "const ${1:spName}Text = (request.nextUrl.searchParams.get(\"${1:spName}\") ?? \"\")$0"
+    ],
+    "description": "Read a query string parameter (empty string if missing)"
   }
 }
