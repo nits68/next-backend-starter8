@@ -12,7 +12,7 @@ Két környezetre készül:
 A kód mindkét esetben ugyanaz, csak a `.env` állományban lévő connection string különbözik.
 
 > [!IMPORTANT]
-> **A Prisma 8 jelenleg release candidate.** 2026 novemberében `prisma@8.0.0-rc.34` (parancssori eszköz) és `@prisma/orm-postgres@8.0.0-rc.24` (könyvtár), a végleges kiadás hamarosan várható. Mivel az RC-k között az írásmód is változhat (lásd 7. pont: dátummezők), a sablon a Prisma- és a Next.js-csomagokat **pontos verzióra rögzíti** (`^` nélkül, lásd 2.2). A PostgreSQL-támogatás a legérettebb része, de a végleges kiadásig az API kis mértékben még változhat.
+> **A Prisma 8 jelenleg release candidate.** 2026 novemberében `prisma@8.0.0-rc.35` (parancssori eszköz) és `@prisma/orm-postgres@8.0.0-rc.25` (könyvtár), a végleges kiadás hamarosan várható. A Prisma-csomagok `^`-jellel szerepelnek a `package.json`-ban, ahogy az `orm init` telepíti őket; mivel az RC-k között az írásmód is változhat (lásd 7. pont: dátummezők), telepítés után ellenőrizni kell a verziókat (lásd 2.2). A PostgreSQL-támogatás a legérettebb része, de a végleges kiadásig az API kis mértékben még változhat.
 >
 > Követelmények:
 >
@@ -68,23 +68,19 @@ A parancssorban (`cmd`) ez akkor fordul elő, ha a mappába kisbetűvel lépsz b
 
 > npm i -D prettier typescript-eslint tsx<br>
 > npx prisma@latest orm init --yes --target postgres --authoring psl --schema-path prisma/contract.prisma --write-env<br>
-> npm i -E -D prisma@8.0.0-rc.34 @prisma/cli-engine@0.10.0<br>
-> npm i -E @prisma/orm-postgres@8.0.0-rc.24<br>
 > npm install-scripts deny esbuild unrs-resolver<br>
 
-**Pontos verziók.** A Prisma 8 RC-i között nemcsak hibajavítások, hanem írásmód-változások is vannak (pl. a dátummezőknél, 7. pont). A `^` jel (pl. `^8.0.0-rc.24`) megengedné, hogy egy későbbi `npm install` magától újabb RC-t telepítsen, és a contract váratlanul hibás legyen. Ezért ez az öt csomag **pontos verzión** (`^` nélkül) szerepel a `package.json`-ban:
+**Verziók.** Az `orm init` a Prisma-csomagok legfrissebb verzióját telepíti, `^`-jellel, ahogy a Prisma gyári (`--api`) sablonja is (2026. november):
 
-| Csomag                 | Verzió        | Miért rögzített?                                                      |
-| ---------------------- | ------------- | --------------------------------------------------------------------- |
-| `prisma`               | `8.0.0-rc.34` | release candidate, az RC-k között változhat az írásmód                |
-| `@prisma/orm-postgres` | `8.0.0-rc.24` | release candidate, a `prisma` CLI-vel együtt kell frissíteni          |
-| `@prisma/cli-engine`   | `0.10.0`      | a `prisma.config.ts` ebből importál, a CLI-vel együtt kell frissíteni |
-| `next`                 | `16.4.6`      | a `create-next-app` eleve pontos verzióval telepíti                   |
-| `eslint-config-next`   | `16.4.6`      | a `next`-tel azonos verziónak kell lennie                             |
+| Csomag                 | Verzió         | Megjegyzés                                                                          |
+| ---------------------- | -------------- | ----------------------------------------------------------------------------------- |
+| `prisma`               | `^8.0.0-rc.35` | a parancssori eszköz (fejlesztői függőség)                                          |
+| `@prisma/orm-postgres` | `^8.0.0-rc.25` | ugyanazt a belső `@prisma/orm-toolchain`-t kell használnia, mint a `prisma` CLI-nek |
+| `@prisma/cli-engine`   | `^0.10.4`      | a `prisma.config.ts` ebből importál, a CLI-vel egyező verzió kell                   |
+| `next`                 | `16.4.6`       | pontos verzió: a `create-next-app` eleve így telepíti                               |
+| `eslint-config-next`   | `16.4.6`       | pontos verzió: a `next`-tel azonos verziónak kell lennie                            |
 
-Az `-E` (`--save-exact`) kapcsoló írja a pontos verziót a `package.json`-ba (az `orm init` `^`-jellel telepít, ezért kell újra telepíteni a három Prisma-csomagot). A többi csomag (`dotenv`, `prettier`, `tsx`, `typescript` stb.) maradhat `^`-jellel.
-
-**Frissítés.** A Prisma-csomagokat tudatosan, együtt érdemes frissíteni, szintén `-E`-vel (pl. `npm i -E -D prisma@latest`, `npm i -E @prisma/orm-postgres@latest`). Előtte érdemes megnézni, hogy a két csomag ugyanazt a belső `@prisma/orm-toolchain` verziót használja-e (lásd 2.4). A `@prisma/cli-engine`-t arra a verzióra kell állítani, amelyet az új `prisma` CLI használ (`npm view prisma@<verzió> dependencies --json | Select-String cli-engine`), különben két példány kerül a projektbe (`npm ls @prisma/cli-engine`: csak egyféle verzió szerepeljen). Utána pedig `npx prisma contract emit` és ellenőrzés (`npm ls @prisma/orm-framework`, `npx tsc --noEmit`, `npm run build`).
+A Prisma 8 RC-i között nemcsak hibajavítások, hanem írásmód-változások is vannak (pl. a dátummezőknél, 7. pont). A `^8.0.0-rc.35` a későbbi 8.0.0 RC-ket és a végleges 8.x kiadásokat is megengedi, ezért egy új gépen futtatott `npm install` újabb RC-t hozhat, mint amivel a sablon készült. Telepítés után ezért mindig ellenőrizd, hogy `npm ls @prisma/orm-framework` és `npm ls @prisma/cli-engine` egyetlen verziót mutat-e (lásd 2.4), és fusson le hiba nélkül az `npx prisma contract emit`. A többi csomag (`dotenv`, `prettier`, `tsx`, `typescript` stb.) is `^`-jellel szerepel.
 
 A csomagok:
 
@@ -102,7 +98,7 @@ Az `orm init` kapcsolói:
 
 Az `orm init` a következőket végzi el:
 
-- telepíti a `@prisma/orm-postgres` és a `dotenv` csomagokat, fejlesztői függőségként a `prisma` és a `@prisma/cli-engine` csomagokat
+- telepíti a `@prisma/orm-postgres`, a `dotenv` és a `pg` csomagokat, fejlesztői függőségként a `prisma` és a `@prisma/cli-engine` csomagokat (mindet a legfrissebb verzióval, `^`-jellel)
 - létrehozza a `prisma.config.ts`, a `prisma/contract.prisma` (minta `User` és `Post` modellel), a `prisma/db.ts` és a `prisma-8.md` (rövid Prisma 8 összefoglaló) állományokat
 - a `package.json`-ba felveszi a `contract:emit` scriptet (a `"type": "module"` beállítást az rc.27 óta már nem írja be, add hozzá kézzel)
 - a `tsconfig.json`-ban beállítja a `"module": "preserve"` és a `"types": ["node"]` opciókat (a Next.js-nek ez megfelel)
@@ -161,7 +157,9 @@ Ha a két csomag később ismét ugyanazt a verziót használja, az `overrides` 
 
 **`npm warn ERESOLVE overriding peer dependency ... @effect/vitest ... effect`:** a Prisma CLI korábbi verzióinál a felhős telepítő rész (Prisma Composer) belső függőségei között volt egy verzióütközés (az `alchemy` újabb `@effect/vitest`-et kért, mint amilyen `effect` verziót a Composer rögzített). Az npm feloldotta, ezért csak figyelmeztetés volt, és egy `overrides` bejegyzés a `package.json`-ban eltüntette. A `prisma@8.0.0-rc.27` óta már nem jelentkezik, ezért a bejegyzés törölve lett. Ha egy későbbi verziónál mégis előjönne a figyelmeztetés, az `"overrides": { "@effect/vitest": "<a Composer által kért verzió>" }` bejegyzéssel ismét elnémítható.
 
-**`27 high severity vulnerabilities`** (a `prisma@8.0.0-rc.34`, az `@prisma/orm-postgres@8.0.0-rc.24` és a `next@16.4.6` mellett, 2026. november): mind a 27 ugyanabból az egy hibából jön, a `picomatch` csomag ReDoS-sérülékenységéből ([GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf)). Ez a `picomatch` összes verzióját érinti, ezért jelenleg nincs olyan verzió, amelyre frissíteni lehetne. A `picomatch` fájlnév-minták (pl. `**/*.ts`) illesztésére szolgál, és a lista azért ilyen hosszú, mert minden csomag külön megjelenik, amely közvetve rá épül: a `prisma` parancssori eszköz (`@vercel/nft`, `alchemy`, Prisma Composer), az ESLint-csomagok (`typescript-eslint`, `eslint-config-next`) és az `@prisma/orm-postgres` is (`tinyglobby`-n keresztül). A hiba csak akkor jelent veszélyt, ha a mintát egy támadó adhatja meg; a sablonban a minták a csomagokban rögzítettek, a felhasználó által küldött adatok nem jutnak el hozzájuk. A futó alkalmazás függőségeit így lehet külön ellenőrizni:
+**`npm audit`:** a `prisma@8.0.0-rc.35`, az `@prisma/orm-postgres@8.0.0-rc.25` és a `next@16.4.6` mellett (2026. november 24.) az `npm audit` és az `npm audit --omit=dev` is `found 0 vulnerabilities` eredményt ad. Ha mégis talál valamit, az új hiba.
+
+**`27 high severity vulnerabilities`** (régebbi verziók, `prisma@8.0.0-rc.34` és `@prisma/orm-postgres@8.0.0-rc.24` mellett): mind a 27 ugyanabból az egy hibából jön, a `picomatch` csomag ReDoS-sérülékenységéből ([GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf)). Ez a `picomatch` összes verzióját érinti, ezért jelenleg nincs olyan verzió, amelyre frissíteni lehetne. A `picomatch` fájlnév-minták (pl. `**/*.ts`) illesztésére szolgál, és a lista azért ilyen hosszú, mert minden csomag külön megjelenik, amely közvetve rá épül: a `prisma` parancssori eszköz (`@vercel/nft`, `alchemy`, Prisma Composer), az ESLint-csomagok (`typescript-eslint`, `eslint-config-next`) és az `@prisma/orm-postgres` is (`tinyglobby`-n keresztül). A hiba csak akkor jelent veszélyt, ha a mintát egy támadó adhatja meg; a sablonban a minták a csomagokban rögzítettek, a felhasználó által küldött adatok nem jutnak el hozzájuk. A futó alkalmazás függőségeit így lehet külön ellenőrizni:
 
 ```powershell
 npm audit --omit=dev
@@ -171,7 +169,7 @@ npm audit --omit=dev
 8 high severity vulnerabilities
 ```
 
-Ez a 8 tétel mind az `@prisma/orm-postgres` → `tinyglobby` → `picomatch` láncból jön (korábban, a `prisma@8.0.0-rc.33` / `@prisma/orm-postgres@8.0.0-rc.23` idején itt még `found 0 vulnerabilities` volt). Várhatóan egy újabb `picomatch`, majd az arra épülő Prisma-kiadás oldja meg.
+Ez a 8 tétel mind az `@prisma/orm-postgres` → `tinyglobby` → `picomatch` láncból jött (a `prisma@8.0.0-rc.33` / `@prisma/orm-postgres@8.0.0-rc.23` idején itt még `found 0 vulnerabilities` volt). A `prisma@8.0.0-rc.35` / `@prisma/orm-postgres@8.0.0-rc.25` párossal ismét `found 0 vulnerabilities` az eredmény.
 
 > [!WARNING]
 > Se az `npm audit fix`, se az `npm audit fix --force` parancsot **ne** futtasd! Már a `--force` nélküli változat is egy régi fejlesztői buildre (`@prisma/orm-postgres@8.0.0-rc.9-dev.13`) állítaná vissza a Prisma könyvtárat. A `--force` ezen felül a `prisma` csomagot a 7-es verzióra (`prisma@7.10.1`), az `eslint-config-next`-et a Next.js 14-es verziójához tartozóra (`eslint-config-next@14.2.35`), a `typescript-eslint`-et pedig egy régebbi verzióra (`8.47.0`) vinné vissza, ami a projektet elrontja. A figyelmeztetések a `picomatch` javításával és az erre épülő csomagok frissítésével tűnnek el.
@@ -816,8 +814,8 @@ A kapcsolat:
 További tudnivalók:
 
 - Az első sor (`// use prisma-8`) kötelező, nélküle a `contract emit` hibával leáll (`CONTRACT.SOURCE_LOAD_FAILED`).
-- A natív PostgreSQL típusok a típus helyére kerülnek: `VarChar(200)`, `Char(2)`, `SmallInt`, `Numeric(8, 2)`, `Date`, `Uuid` stb.
-- A `VarChar(n)`, `Char(n)` és `Numeric(p, s)` mezők TypeScript típusa nem sima `string`, hanem egy "megjelölt" típus (pl. `Varchar<200>`). Szöveges értéket csak típuskényszerítéssel lehet nekik átadni (lásd lent). Ha nincs szükség hosszkorlátra, egyszerűbb a `String` (`text` oszlop).
+- A natív PostgreSQL típusok a típus helyére kerülnek: `Varchar(200)`, `Char(2)`, `Int2`, `NumericString(8, 2)`, `Date`, `Uuid` stb. A régi nevek (`VarChar`, `SmallInt`, `Numeric`, `BigIntNumber`, `UnboundedInt`, `Real`, `VarBit`) elavultak: még működnek, de a `contract emit` `PSL_DEPRECATED_SCALAR_NAME` figyelmeztetést ad. Helyettük: `Varchar`, `Int2`, `NumericString`, `Int8Number`, `NumericBigInt`, `Float4`, `Varbit`. Az átnevezés az adatbázist nem változtatja meg.
+- A `Varchar(n)`, `Char(n)` és `NumericString(p, s)` mezők TypeScript típusa nem sima `string`, hanem egy "megjelölt" típus (pl. `Varchar<200>`). Szöveges értéket csak típuskényszerítéssel lehet nekik átadni (lásd lent). Ha nincs szükség hosszkorlátra, egyszerűbb a `String` (`text` oszlop).
 - A `@unique`-ból valódi `UNIQUE` megszorítás lesz az adatbázisban.
 - A kódban a modellek elérése: `db.orm.public.Author`, `db.orm.public.Article` (`public` a PostgreSQL séma neve).
 - A `@@map("author")` a tábla nevét adja meg (a modell neve `Author`, a táblaé `author`). A táblanevek **egyes számúak** (`author`, `article`), kisbetűsek, `snake_case`-esek; a REST végpontok URL-je ettől függetlenül többes számú (`/api-examples/articles`).
@@ -843,9 +841,9 @@ További tudnivalók:
 > | `temporal.updatedAtJsDate()` (rc.12–17), `temporal.UpdatedAtJsDate` (rc.20–21) | `TimestamptzJsDate @onCreate(now()) @onUpdate(now())` |
 > | `temporal.createdAtJsDate()`                                                   | `TimestamptzJsDate @onCreate(now())`                  |
 
-> Ha MySQL-ből érkezel: a két adatbázis legfontosabb különbségei (idézőjelek, típusok, SQL írásmód, sorozatok, hibakódok): [mysql-vs-postgresql.md](mysql-vs-postgresql.md).
+> Ha MySQL-ből érkezel: a két adatbázis legfontosabb különbségei (idézőjelek, típusok, SQL írásmód, sorozatok, hibakódok): [help/MYSQL_vs_POSTGRESQL.md](help/MYSQL_vs_POSTGRESQL.md).
 
-> Részletes összefoglaló a dátum- és időtípusokról (PostgreSQL, Prisma 8, TypeScript, JSON, időzónák, írás és szűrés): [DATE-TIME.md](DATE-TIME.md).
+> Részletes összefoglaló a dátum- és időtípusokról (PostgreSQL, Prisma 8, TypeScript, JSON, időzónák, írás és szűrés): [help/DATE-TIME.md](help/DATE-TIME.md).
 
 **Rövid alakok (rc.22-től).** A `DateTime` és a `Date` úgynevezett kényelmi (convenience) típus, amely a paramétereiből választ konkrét típust:
 
@@ -860,7 +858,7 @@ A `contract infer` is ezeket a rövid alakokat írja (`Date`, `DateTime(precisio
 
 A `Temporal` végű típusok (`TimestamptzTemporal`, `DateTemporal`, `DateTime(as: temporal)`) a JavaScript új `Temporal` API-ját használják, amely csak a Node.js 26-tól beépített. Node.js 24-en az ilyen mezők olvasása `RUNTIME.TEMPORAL_UNAVAILABLE` hibával leáll, ezért ezeket ne használd. A régebbi RC-k végződés nélküli `Timestamptz` és `Timestamp` típusa megszűnt (`PSL_UNRESOLVED_REFERENCE`).
 
-**`VarChar` mezők írása.** Ha a modellben pl. `nev VarChar(100)` szerepel, egy `string` értékre a TypeScript ezt a hibát adja: `Type 'string' is not assignable to type 'Varchar<100>'`. Megoldás:
+**`Varchar` mezők írása.** Ha a modellben pl. `nev Varchar(100)` szerepel, egy `string` értékre a TypeScript ezt a hibát adja: `Type 'string' is not assignable to type 'Varchar<100>'`. Megoldás:
 
 ```ts
 import type { Varchar } from "@prisma/orm-postgres/target/codec-types";
@@ -916,11 +914,13 @@ Figyelj a típusokra, mielőtt emitálsz:
 
 - A `timestamptz` oszlopok `DateTime(precision: 6)`, a `date` oszlopok `Date` típust kapnak: ezek Node.js 24-en is jók (`Date` objektum, illetve szöveg), nem kell átírni őket (7. pont, rövid alakok).
 - A `timestamp` (időzóna nélküli) oszlopok `DateTime(storage: timestamp, precision: 6)` típust kapnak, a kódban `Date` objektumként; ha szövegként kell, írd át `TimestampString`-re (az oszlop típusa ugyanaz marad), vagy alakítsd az oszlopot `timestamptz`-re. A `time` oszlop `Time` típust kap (szöveg).
-- A `varchar` oszlopok `VarChar(n)` típust kapnak, ezekbe írni csak típuskényszerítéssel lehet (lásd 7. pont).
-- A `Numeric` típusú mezők szövegként jönnek vissza (pl. `"3990.00"`).
+- A `varchar` oszlopok `Varchar(n)` típust kapnak, ezekbe írni csak típuskényszerítéssel lehet (lásd 7. pont).
+- A `NumericString` (`numeric`) típusú mezők szövegként jönnek vissza (pl. `"3990.00"`).
 - A `CHECK` megszorításoknál az emit `PN_EXACT_NAME_BODY_COMPARISON` figyelmeztetést írhat ki. Ez a `contract infer`-ből származó megszorításoknál nem okoz gondot.
 
 ## 9. Minden contract változás után szinkronizálás az adatbázissal
+
+> Részletes, példákkal illusztrált tanulói segédlet a migrációkról (fogalmak, a három npm script, adatvesztő változások, gyakori hibák): [help/MIGRATION.md](help/MIGRATION.md).
 
 Migrációval (ajánlott; a migrációk a `migrations/app` mappába kerülnek, ezeket commitolni kell):
 
@@ -931,7 +931,7 @@ Migrációval (ajánlott; a migrációk a `migrations/app` mappába kerülnek, e
 - A `migration plan` a contract előző és új változata közötti különbségből készíti el a migrációt, az adatbázishoz nem csatlakozik (shadow adatbázis sem kell). Kiírja a futtatandó SQL-t is.
 - Az első `migration plan` egy `baseline` migrációt is készít, amely a `db init` utáni állapotot rögzíti.
 - A `--advance-ref db` azt jegyzi fel, hogy a fejlesztői adatbázis már az új állapotban van, így a következő `migration plan` innen indul.
-- Egy meglévő oszlop **típusának** megváltoztatásakor (pl. `VarChar(200)` → `String`) a Prisma az adatok átalakítására egy kézzel kitöltendő lépést (`placeholder(...)`) generál a `migration.ts`-be. Ilyenkor a migrációt ki kell egészíteni, vagy (fejlesztés közben) a `prisma db update` parancsot kell használni.
+- Egy meglévő oszlop **típusának** megváltoztatásakor (pl. `Varchar(200)` → `String`) a Prisma az adatok átalakítására egy kézzel kitöltendő lépést (`placeholder(...)`) generál a `migration.ts`-be. Ilyenkor a migrációt ki kell egészíteni, vagy (fejlesztés közben) a `prisma db update` parancsot kell használni.
 
 Állapot és ellenőrzés:
 
@@ -943,10 +943,10 @@ Gyors kísérletezéshez migráció nélkül (a Prisma 7-es `db push` megfelelő
 > npx prisma contract emit<br>
 > npx prisma db update<br>
 
-A kész migrációk alkalmazása egy másik adatbázisra (pl. Neonra, az aktív Neon `.env` blokkal): előbb nézd meg, mi fog lefutni, aztán futtasd, **`--advance-ref` nélkül**:
+A kész migrációk alkalmazása egy másik adatbázisra (pl. Neonra, az aktív Neon `.env` blokkal): előbb nézd meg, mi fog lefutni, aztán futtasd **`--no-advance-ref`** kapcsolóval. A `db migrate` ugyanis kapcsoló nélkül is előrelépteti a `db` hivatkozást, ha a kapcsolat a `.env`-ből jön, a `db` hivatkozás viszont a fejlesztői adatbázishoz tartozik:
 
 > npx prisma db migrate --show<br>
-> npx prisma db migrate<br>
+> npx prisma db migrate --no-advance-ref<br>
 
 ## 10. contract emit, db update, db sign - mikor melyiket?
 
@@ -1004,7 +1004,7 @@ Ellenőrzi, hogy az adatbázis sémája megfelel a contractnak, és ha igen, al�
 Megmutatja, hogy az adatbázis aláírása és a célként megadott contract között mely migrációk várnak még végrehajtásra, vagyis hol tart az adatbázis. Csak olvas.
 
 **`npx prisma db migrate --advance-ref db`**
-A várakozó migrációkat sorrendben végrehajtja az adatbázison. A már lemezen lévő migrációkat játssza vissza, magától nem talál ki újat. Siker után az `--advance-ref db` a `db` hivatkozást az új állapotra állítja, így a következő `migration plan` onnan indul. Más adatbázison (pl. Neonon) a migrációkat **`--advance-ref` nélkül** alkalmazd, mert az a `db` hivatkozás a fejlesztői adatbázishoz tartozik. Előtte megnézheted az útvonalat: `npx prisma db migrate --show`.
+A várakozó migrációkat sorrendben végrehajtja az adatbázison. A már lemezen lévő migrációkat játssza vissza, magától nem talál ki újat. Siker után az `--advance-ref db` a `db` hivatkozást az új állapotra állítja, így a következő `migration plan` onnan indul. Más adatbázison (pl. Neonon) a migrációkat **`--no-advance-ref`** kapcsolóval alkalmazd, mert a `db` hivatkozás a fejlesztői adatbázishoz tartozik (kapcsoló nélkül a `db migrate` is előreléptetné, ha a kapcsolat a `.env`-ből jön). Előtte megnézheted az útvonalat: `npx prisma db migrate --show`.
 
 ### prisma contract emit
 
@@ -1229,8 +1229,8 @@ A kérések a `tests.http` állományban vannak (VS Code REST Client, a projekt 
 - **A `next build` egy migrációs fájl miatt áll le:** a `migrations` mappa hiányzik a `tsconfig.json` `exclude` listájából (4. pont).
 - **`SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'`:** a `pg` driver figyelmeztetése, a működést nem befolyásolja. A `DATABASE_URL`-ben és a `DIRECT_URL`-ben `sslmode=verify-full`-lal eltűnik.
 - **A `.env` betöltése:** a Next.js magától betölti, a Prisma CLI a `prisma.config.ts`, a saját scriptek (pl. seed) a `prisma/db.ts` `import "dotenv/config"` sora miatt.
-- **`Type 'string' is not assignable to type 'Varchar<200>'`:** a `VarChar(n)` mezőkbe típuskényszerítéssel kell írni (`... as Varchar<200>`, lásd 7. pont), vagy a contractban `String` típust kell használni.
-- **`Numeric` / `Decimal` mezők:** szövegként jönnek vissza (`"3990.00"`), számolni a `Number(...)` alakkal lehet.
+- **`Type 'string' is not assignable to type 'Varchar<200>'`:** a `Varchar(n)` mezőkbe típuskényszerítéssel kell írni (`... as Varchar<200>`, lásd 7. pont), vagy a contractban `String` típust kell használni.
+- **`NumericString` / `Decimal` mezők:** szövegként jönnek vissza (`"3990.00"`), számolni a `Number(...)` alakkal lehet.
 - **Az URL paraméter szöveg:** `Number(id)`, és `Number.isNaN(...)` ellenőrzés kell.
 - **CLI kimenet:** egyes környezetekben (pl. nem interaktív terminálban) a Prisma CLI JSON sorokat ír ki. Olvashatóbb a `--format markdown` kapcsolóval.
 - **`prisma-8.md`:** az `orm init` által létrehozott rövid Prisma 8 összefoglaló, érdemes elolvasni.

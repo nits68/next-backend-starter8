@@ -8,17 +8,18 @@ This is a **Next.js 16 REST API starter** (App Router route handlers, no UI) usi
 
 ## Stack and pinned versions
 
-| Package                                  | Version          | Note                                       |
-| ---------------------------------------- | ---------------- | ------------------------------------------ |
-| `prisma` (CLI, devDependency)            | `8.0.0-rc.34`    | pinned, no `^`                             |
-| `@prisma/orm-postgres` (runtime library) | `8.0.0-rc.24`    | pinned, no `^`                             |
-| `@prisma/cli-engine`                     | `0.10.0`         | pinned, `prisma.config.ts` imports from it |
-| `next` / `eslint-config-next`            | `16.4.6`         | pinned, must stay equal                    |
-| Node.js                                  | 22.18+ or 24.11+ |                                            |
+| Package                                  | Version          | Note                                                    |
+| ---------------------------------------- | ---------------- | ------------------------------------------------------- |
+| `prisma` (CLI, devDependency)            | `^8.0.0-rc.35`   | `^` range, as installed by `prisma orm init`            |
+| `@prisma/orm-postgres` (runtime library) | `^8.0.0-rc.25`   | `^` range, must match the CLI's `@prisma/orm-toolchain` |
+| `@prisma/cli-engine`                     | `^0.10.4`        | `^` range, `prisma.config.ts` imports from it           |
+| `next` / `eslint-config-next`            | `16.4.6`         | pinned, must stay equal                                 |
+| `pg`                                     | `^8.23.1`        | runtime dependency                                      |
+| Node.js                                  | 22.18+ or 24.11+ |                                                         |
 
-- **Do not change pinned versions**, add `^`, or run `npm audit fix` / `npm audit fix --force`. Even without `--force` it downgrades `@prisma/orm-postgres` to an old dev build (`8.0.0-rc.9-dev.13`). With `--force` it also downgrades `prisma` to v7, `eslint-config-next` to 14.x and `typescript-eslint` to an old version.
-- Updating Prisma is a deliberate step: the `prisma` CLI and `@prisma/orm-postgres` must use the same internal `@prisma/orm-toolchain` version (check with `npm view <pkg>@<version> dependencies`). Pin `@prisma/cli-engine` to the version the `prisma` CLI depends on. After updating, `npm ls @prisma/orm-framework` and `npm ls @prisma/cli-engine` must each show a single version. See README section 2.4.
-- `npm audit` currently reports 27 high, `npm audit --omit=dev` reports 8 high (Nov 2026). All of them come from one `picomatch` ReDoS advisory (GHSA-fc5q-39xc-vjpf) that affects every `picomatch` version, so there is no fix yet. The runtime path is `@prisma/orm-postgres` → `tinyglobby` → `picomatch`. Any other audit finding is new and must be reported to the user. See README section 2.4.
+- **Do not change pinned versions** (`next`, `eslint-config-next`), do not add `^` to them, and do not run `npm audit fix` / `npm audit fix --force`. Even without `--force` it downgrades `@prisma/orm-postgres` to an old dev build (`8.0.0-rc.9-dev.13`). With `--force` it also downgrades `prisma` to v7, `eslint-config-next` to 14.x and `typescript-eslint` to an old version.
+- The `prisma` CLI and `@prisma/orm-postgres` must use the same internal `@prisma/orm-toolchain` version, and `@prisma/cli-engine` must resolve to the version the `prisma` CLI depends on. Because all three use `^` ranges, a fresh `npm install` can pull a newer RC: after every install, `npm ls @prisma/orm-framework` and `npm ls @prisma/cli-engine` must each show a single version and `npx prisma contract emit` must succeed. See README sections 2.2 and 2.4.
+- `npm audit` and `npm audit --omit=dev` both report 0 vulnerabilities (prisma rc.35 / orm-postgres rc.25, 24 Nov 2026). Any audit finding is new and must be reported to the user. See README section 2.4.
 
 ## Environment and commands
 
@@ -65,7 +66,7 @@ prisma.config.ts        Prisma CLI config
 - The **first line must be `// use prisma-8`**, otherwise `contract emit` fails.
 - **Format `prisma/contract.prisma` with the Prisma VS Code extension** (`Prisma.prisma`), not Prettier. `.vscode/settings.json` sets `"[prisma]": { "editor.defaultFormatter": "Prisma.prisma" }` with format on save. When you edit the contract, follow the extension's layout (aligned columns, one attribute block per line) so that the next format on save produces no diff.
 - There is no `datasource` / `generator` block.
-- Native PostgreSQL types go in the type position: `VarChar(200)`, `SmallInt`, `Numeric(8, 2)`, not `String @db.VarChar(200)`.
+- Native PostgreSQL types go in the type position: `Varchar(200)`, `Int2`, `NumericString(8, 2)`, not `String @db.VarChar(200)`. The old names `VarChar`, `SmallInt`, `Numeric`, `BigIntNumber`, `UnboundedInt`, `Real`, `VarBit` are deprecated aliases (`PSL_DEPRECATED_SCALAR_NAME` warning on `contract emit`); use `Varchar`, `Int2`, `NumericString`, `Int8Number`, `NumericBigInt`, `Float4`, `Varbit`. Renaming the type in the contract does not change the database.
 - Use `@@map("table_name")` and `@map("column_name")` for database names: tables are **singular** (`@@map("author")`, `@@map("article")`), multi-word columns are snake_case (`createdAt ... @map("created_at")`, `authorId Int @map("author_id")`). Without `@map` the column would be camelCase and need double quotes in every hand-written SQL statement. Changing a `@map` on an existing database is NOT a rename for Prisma: `db update` drops and re-adds the column (data loss), so ask the user first; for this template drop the tables and run `npm run db:setup`. The same applies to `@@map` on a model (table rename = `DROP TABLE` + `CREATE TABLE`).
 - Do not name a model/table `user`: it is a reserved word in PostgreSQL (hand-written SQL would need `"user"`; unquoted `SELECT * FROM user` returns the current database user). The template uses `Author` / `author` instead.
 - REST URLs stay plural (`/api-examples/articles`); only the database table names are singular.
@@ -128,8 +129,8 @@ await db.orm.public.Article.where({ content: "x" }).deleteAll(); // returns the 
 | nested create (`articles: { create: [...] }`)  | not supported: create the parent first, then the children with the foreign key |
 
 - `update` / `delete` **require** a preceding `.where(...)` and return `null` (no exception) when nothing matches.
-- `VarChar(n)` fields are branded types; a plain `string` needs a cast: `import type { Varchar } from "@prisma/orm-postgres/target/codec-types";` then `value as Varchar<200>`.
-- `Numeric` values come back as strings (e.g. `"3990.00"`).
+- `Varchar(n)` fields are branded types; a plain `string` needs a cast: `import type { Varchar } from "@prisma/orm-postgres/target/codec-types";` then `value as Varchar<200>`.
+- `NumericString` values come back as strings (e.g. `"3990.00"`).
 - Do not create a new client per request and do not call `db.close()` in route handlers (only in scripts such as the seed).
 
 ## Error handling
@@ -140,7 +141,7 @@ Errors are PostgreSQL errors with a `sqlState` property (there are no `P2002`/`P
 | ---------- | --------------------------------------------------------------------------------- | --------------------------------------- |
 | `23505`    | unique constraint violation                                                       | `409`                                   |
 | `23503`    | foreign key violation (missing referenced row, or row still referenced on delete) | `400` on create/update, `409` on delete |
-| `22001`    | value too long for `VarChar(n)`                                                   | `400`                                   |
+| `22001`    | value too long for `Varchar(n)`                                                   | `400`                                   |
 
 ```ts
 if (error instanceof Error && "sqlState" in error && error.sqlState === "23505") { ... }
@@ -178,7 +179,8 @@ If the database schema changed, also run `npm run db:update -- --dry-run` and re
 
 ## References
 
-- `DATE-TIME.md` – date/time types: PostgreSQL ↔ Prisma 8 ↔ TypeScript ↔ JSON, time zones; note that `...JsDate` fields accept only `Date` objects (convert `request.json()` strings with `new Date(...)`)
+- `help/MIGRATION.md` – student guide to migrations (Hungarian): `migration plan` / `migration status` / `db migrate`, the `db` ref, baseline, `--rename` / `--delete` / `--convert`, applying to another database with `--no-advance-ref`, common errors
+- `help/DATE-TIME.md` – date/time types: PostgreSQL ↔ Prisma 8 ↔ TypeScript ↔ JSON, time zones; note that `...JsDate` fields accept only `Date` objects (convert `request.json()` strings with `new Date(...)`)
 - `README.md` – full setup guide (Hungarian): installation, databases (local PostgreSQL, Neon, Prisma Postgres, Supabase), troubleshooting (section 14)
 - `prisma-8.md` – short Prisma 8 reference written by `prisma orm init`
 - Prisma ORM 8 docs: https://www.prisma.io/docs/orm (append `.md` to any docs URL for Markdown)
