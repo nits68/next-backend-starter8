@@ -56,7 +56,7 @@ kifejezésben a `@map(...)` szerinti **oszlopneveket** kell használni, nem a Pr
 ```
 
 A rossz változat a `contract emit`-en még átmegy (a Prisma nem ellenőrzi az SQL-t), de a
-`db update` / `migrate` futásakor a PostgreSQL hibát ad: `column "kepurl" does not exist`.
+`db update` futásakor a PostgreSQL hibát ad: `column "kepurl" does not exist`.
 
 ### A név: előtag + hash
 
@@ -208,7 +208,7 @@ A `@@check` hozzáadása után (PowerShellben):
 ```powershell
 npm run contract:emit
 npm run db:update -- --dry-run   # előbb nézd meg, mit csinálna
-npm run db:update                # vagy: npm run migration:plan -- --name ar_check ; npm run migrate
+npm run db:update
 ```
 
 **Figyelem:** ha a táblában már van olyan sor, amely sérti az új szabályt, a PostgreSQL nem hozza

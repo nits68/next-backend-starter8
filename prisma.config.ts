@@ -6,7 +6,7 @@ export default definePrismaConfig({
   orm: ormConfig({
     contract: "./prisma/contract.prisma",
     db: {
-      // a CLI (migrációk) a direkt kapcsolatot használja, ha van ilyen (Neon)
+      // a CLI (db init, db update, contract infer) a direkt kapcsolatot használja, ha van ilyen (Neon)
       connection: (process.env["DIRECT_URL"] ?? process.env["DATABASE_URL"])!,
     },
   }),

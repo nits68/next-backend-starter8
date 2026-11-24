@@ -13,7 +13,7 @@ export default [
       ".next/**",
       "next-env.d.ts",
       "prisma/contract.d.ts", // generált állomány
-      "migrations/**", // generált migrációk és snapshotok
+      "migrations/**", // a db init / db update által generált fájlok
       "*.config.js",
       "*.config.cjs",
       "*.config.mjs",

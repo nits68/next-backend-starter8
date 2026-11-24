@@ -48,3 +48,6 @@ dist/
 
 # Supabase SSL gyökértanúsítvány (mindenki a saját Supabase Dashboardjáról tölti le)
 /supabase-ca.crt
+
+# prisma 8: a db init / db update által írt helyi állapotfájlok
+/migrations

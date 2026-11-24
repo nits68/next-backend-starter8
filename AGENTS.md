@@ -26,20 +26,19 @@ This is a **Next.js 16 REST API starter** (App Router route handlers, no UI) usi
 - **Windows: run commands in PowerShell**, not `cmd`. The Prisma 8 CLI fails (`CLI.CONFIG_UNREADABLE` / "Values and registries made by one copy…") when the working directory has a lowercase drive letter (`e:\…`), which `cmd` can produce.
 - Use the npm scripts or `npx prisma …` (the CLI is a local devDependency, not global):
 
-| Command                                                       | Purpose                                                                                                                                                   |
-| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `npm run dev`                                                 | dev server on http://localhost:3000                                                                                                                       |
-| `npm run build`                                               | `prisma contract emit` + `next build`                                                                                                                     |
-| `npm run contract:emit`                                       | regenerate `prisma/contract.json` + `contract.d.ts` from the contract                                                                                     |
-| `npm run db:init`                                             | create tables on an empty database and sign it                                                                                                            |
-| `npm run db:update`                                           | apply contract changes directly (dev only, like Prisma 7 `db push`); `-- --dry-run` to preview                                                            |
-| `npm run db:verify` / `npm run db:sign`                       | check / record that the database matches the contract                                                                                                     |
-| `npm run db:seed`                                             | run `prisma/seed.ts` (**deletes and refills** all tables)                                                                                                 |
-| `npm run db:setup`                                            | emit + init + seed                                                                                                                                        |
-| `npm run db:drop`                                             | **drops every table** (and enum type) in the `public` schema of the `.env` database; asks for confirmation (`-- --yes` skips it); then `npm run db:setup` |
-| `npm run db:infer1`                                           | existing database → contract (`contract infer`, **overwrites** `prisma/contract.prisma`)                                                                  |
-| `npm run db:infer2`                                           | after reviewing the inferred contract: `contract emit` + `db sign` (does not change tables)                                                               |
-| `npm run migration:plan -- --name <name>` / `npm run migrate` | plan / apply a migration                                                                                                                                  |
+| Command                                 | Purpose                                                                                                                                                   |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                           | dev server on http://localhost:3000                                                                                                                       |
+| `npm run build`                         | `prisma contract emit` + `next build`                                                                                                                     |
+| `npm run contract:emit`                 | regenerate `prisma/contract.json` + `contract.d.ts` from the contract                                                                                     |
+| `npm run db:init`                       | create tables on an empty database and sign it                                                                                                            |
+| `npm run db:update`                     | apply contract changes directly (dev only, like Prisma 7 `db push`); `-- --dry-run` to preview                                                            |
+| `npm run db:verify` / `npm run db:sign` | check / record that the database matches the contract                                                                                                     |
+| `npm run db:seed`                       | run `prisma/seed.ts` (**deletes and refills** all tables)                                                                                                 |
+| `npm run db:setup`                      | emit + init + seed                                                                                                                                        |
+| `npm run db:drop`                       | **drops every table** (and enum type) in the `public` schema of the `.env` database; asks for confirmation (`-- --yes` skips it); then `npm run db:setup` |
+| `npm run db:infer1`                     | existing database → contract (`contract infer`, **overwrites** `prisma/contract.prisma`)                                                                  |
+| `npm run db:infer2`                     | after reviewing the inferred contract: `contract emit` + `db sign` (does not change tables)                                                               |
 
 ## Secrets
 
@@ -56,7 +55,7 @@ prisma/db.ts            the database client (import it, never create another cli
 prisma/seed.ts          sample data
 prisma/contract.json    GENERATED by `prisma contract emit` (gitignored) - do not edit
 prisma/contract.d.ts    GENERATED by `prisma contract emit` (gitignored) - do not edit
-migrations/             GENERATED by the Prisma CLI - do not hand-edit snapshots
+migrations/             GENERATED by `db init` / `db update` (local state, gitignored) - do not edit
 prisma.config.ts        Prisma CLI config
 .vscode/react-next.code-snippets  route handler snippets with imports (íGETmany, íGETsearch, íGETone, íPOST, íPATCH, íDELETE, íError, íbody, íparams, ísearchParams)
 ```
@@ -82,7 +81,7 @@ updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
 Do not use `@updatedAt`, `temporal.updatedAtJsDate()` or `temporal.UpdatedAtJsDate` (removed in rc.22).
 
 - Relations: `author Author @relation(fields: [authorId], references: [id])` + `authorId Int`, and the back relation `articles Article[]`.
-- After **every** contract change: `npm run contract:emit`, then `npm run db:update` (dev) or `migration:plan` + `migrate`.
+- After **every** contract change: `npm run contract:emit`, then `npm run db:update`. This project does not use migrations (`migration plan` / `db migrate`).
 
 ## Database access (Prisma 8 query API)
 
@@ -179,7 +178,6 @@ If the database schema changed, also run `npm run db:update -- --dry-run` and re
 
 ## References
 
-- `help/MIGRATION.md` – student guide to migrations (Hungarian): `migration plan` / `migration status` / `db migrate`, the `db` ref, baseline, `--rename` / `--delete` / `--convert`, applying to another database with `--no-advance-ref`, common errors
 - `help/DATE-TIME.md` – date/time types: PostgreSQL ↔ Prisma 8 ↔ TypeScript ↔ JSON, time zones; note that `...JsDate` fields accept only `Date` objects (convert `request.json()` strings with `new Date(...)`)
 - `README.md` – full setup guide (Hungarian): installation, databases (local PostgreSQL, Neon, Prisma Postgres, Supabase), troubleshooting (section 14)
 - `prisma-8.md` – short Prisma 8 reference written by `prisma orm init`

@@ -17,10 +17,7 @@
     "db:drop": "tsx prisma/drop.ts",
     "db:setup": "prisma contract emit && prisma db init && tsx prisma/seed.ts",
     "db:infer1": "npx prisma contract infer --output ./prisma/contract.prisma",
-    "db:infer2": "npx prisma contract emit && npx prisma db sign",
-    "migration:plan": "prisma migration plan",
-    "migration:status": "prisma migration status",
-    "migrate": "prisma db migrate --advance-ref db"
+    "db:infer2": "npx prisma contract emit && npx prisma db sign"
   },
   "dependencies": {
     "@prisma/orm-postgres": "^8.0.0-rc.25",
