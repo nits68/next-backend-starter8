@@ -67,10 +67,10 @@
       "\t\t// read and validate the dynamic parameter",
       "\t\tconst p = await params;",
       "\t\tconst id = Number(p.id);",
-      "\t\tif (Number.isNaN(id)) {",
-      "\t\t\treturn NextResponse.json({ message: \"Invalid id!\" }, { status: 400 });",
+      "\t\tif (!Number.isInteger(id) || id < 1) {",
+      "\t\t\treturn NextResponse.json({ message: `Invalid id: \\${p.id}! Use a positive integer.` }, { status: 400 });",
       "\t\t}",
-      "\t\tconst data = await db.orm.public.Article.include(\"author\").where({ id }).first();",
+      "\t\tconst data = await db.orm.public.Article.include(\"author\").first({ id });",
       "\t\tif (!data) {",
       "\t\t\treturn NextResponse.json({ message: \"No such record!\" }, { status: 404 });",
       "\t\t}",
@@ -109,8 +109,8 @@
       "\t\t// read and validate the dynamic parameter",
       "\t\tconst p = await params;",
       "\t\tconst id = Number(p.id);",
-      "\t\tif (Number.isNaN(id)) {",
-      "\t\t\treturn NextResponse.json({ message: \"Invalid id!\" }, { status: 400 });",
+      "\t\tif (!Number.isInteger(id) || id < 1) {",
+      "\t\t\treturn NextResponse.json({ message: `Invalid id: \\${p.id}! Use a positive integer.` }, { status: 400 });",
       "\t\t}",
       "\t\t// read the request body and remove the id field",
       "\t\tconst body = await request.json();",
@@ -139,8 +139,8 @@
       "\t\t// read and validate the dynamic parameter",
       "\t\tconst p = await params;",
       "\t\tconst id = Number(p.id);",
-      "\t\tif (Number.isNaN(id)) {",
-      "\t\t\treturn NextResponse.json({ message: \"Invalid id!\" }, { status: 400 });",
+      "\t\tif (!Number.isInteger(id) || id < 1) {",
+      "\t\t\treturn NextResponse.json({ message: `Invalid id: \\${p.id}! Use a positive integer.` }, { status: 400 });",
       "\t\t}",
       "\t\tconst deleted = await db.orm.public.Article.where({ id }).delete();",
       "\t\tif (!deleted) {",
@@ -172,6 +172,46 @@
       "return NextResponse.json({ message: \"Database error!\" }, { status: 500 });"
     ],
     "description": "General error handling inside a catch block"
+  },
+  "Return 400": {
+    "scope": "javascript,typescript",
+    "prefix": "íResponse400",
+    "body": ["return NextResponse.json({ message: `$0` }, { status: 400 });"],
+    "description": "Return a 400 Bad Request response with a message"
+  },
+  "Return 404": {
+    "scope": "javascript,typescript",
+    "prefix": "íResponse404",
+    "body": ["return NextResponse.json({ message: `$0` }, { status: 404 });"],
+    "description": "Return a 404 Not Found response with a message"
+  },
+  "Return 204": {
+    "scope": "javascript,typescript",
+    "prefix": "íResponse204",
+    "body": ["return new NextResponse(null, { status: 204 });$0"],
+    "description": "Return a 204 No Content response (empty body, e.g. after a successful delete)"
+  },
+  "Try-catch wrap": {
+    "scope": "javascript,typescript",
+    "prefix": "ítry",
+    "body": [
+      "try {",
+      "\t${TM_SELECTED_TEXT}$0",
+      "} catch (error) {",
+      "\tif (error instanceof Error) {",
+      "\t\treturn NextResponse.json(",
+      "\t\t\t{",
+      "\t\t\t\tmessage: error.message,",
+      "\t\t\t\tsqlState: \"sqlState\" in error ? error.sqlState : undefined,",
+      "\t\t\t\tconstraint: \"constraint\" in error ? error.constraint : undefined,",
+      "\t\t\t},",
+      "\t\t\t{ status: 400 },",
+      "\t\t);",
+      "\t}",
+      "\treturn NextResponse.json({ message: \"Database error!\" }, { status: 500 });",
+      "}"
+    ],
+    "description": "Wrap the selected code in try-catch with general error handling (select, then Ctrl+Shift+P: Surround With Snippet)"
   },
   "Request body": {
     "scope": "javascript,typescript",

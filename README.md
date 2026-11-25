@@ -1126,26 +1126,26 @@ A másik irányból ugyanez: `db.orm.public.Author.where((u) => u.articles.some(
 
 Gyakori műveletek (Prisma 7 → Prisma 8):
 
-| Prisma 7                                 | Prisma 8                                                              |
-| ---------------------------------------- | --------------------------------------------------------------------- |
-| `prisma.article.findMany()`              | `db.orm.public.Article.all()`                                         |
-| `findMany({ where: { authorId: 1 } })`   | `db.orm.public.Article.where({ authorId: 1 }).all()`                  |
-| `findUnique({ where: { id } })`          | `db.orm.public.Article.where({ id }).first()` (nincs találat: `null`) |
-| `orderBy: { title: "asc" }`              | `.orderBy((a) => a.title.asc())`                                      |
-| `take` / `skip`                          | `.limit(n)` / `.offset(n)`                                            |
-| `select: { title: true }`                | `.select("id", "title")`                                              |
-| `include: { author: true }`              | `.include("author")`                                                  |
-| `where: { title: { contains: "film" } }` | `.where((a) => a.title.like("%film%"))`                               |
-| `where: { author: { name: { ... } } }`   | `.where((a) => a.author.some((u) => u.name.like("%anna%")))`          |
-| `create({ data: {...} })`                | `db.orm.public.Article.create({ ... })` (nincs `data:` csomagolás)    |
-| `createMany({ data: [...] })`            | `db.orm.public.Article.createAll([...])`                              |
-| `update({ where: { id }, data: {...} })` | `db.orm.public.Article.where({ id }).update({ ... })`                 |
-| `delete({ where: { id } })`              | `db.orm.public.Article.where({ id }).delete()`                        |
-| `updateMany` / `deleteMany`              | `.where(...).updateAll({ ... })` / `.where(...).deleteAll()`          |
-| `count()`                                | `.aggregate((a) => ({ db: a.count() }))`                              |
-| hiba `P2002` (egyedi érték ütközés)      | `sqlState === "23505"`                                                |
-| hiba `P2003` (idegen kulcs)              | `sqlState === "23503"`                                                |
-| hiba `P2025` (nincs ilyen rekord)        | az `update` / `delete` `null`-t ad vissza                             |
+| Prisma 7                                 | Prisma 8                                                           |
+| ---------------------------------------- | ------------------------------------------------------------------ |
+| `prisma.article.findMany()`              | `db.orm.public.Article.all()`                                      |
+| `findMany({ where: { authorId: 1 } })`   | `db.orm.public.Article.where({ authorId: 1 }).all()`               |
+| `findUnique({ where: { id } })`          | `db.orm.public.Article.first({ id })` (nincs találat: `null`)      |
+| `orderBy: { title: "asc" }`              | `.orderBy((a) => a.title.asc())`                                   |
+| `take` / `skip`                          | `.limit(n)` / `.offset(n)`                                         |
+| `select: { title: true }`                | `.select("id", "title")`                                           |
+| `include: { author: true }`              | `.include("author")`                                               |
+| `where: { title: { contains: "film" } }` | `.where((a) => a.title.like("%film%"))`                            |
+| `where: { author: { name: { ... } } }`   | `.where((a) => a.author.some((u) => u.name.like("%anna%")))`       |
+| `create({ data: {...} })`                | `db.orm.public.Article.create({ ... })` (nincs `data:` csomagolás) |
+| `createMany({ data: [...] })`            | `db.orm.public.Article.createAll([...])`                           |
+| `update({ where: { id }, data: {...} })` | `db.orm.public.Article.where({ id }).update({ ... })`              |
+| `delete({ where: { id } })`              | `db.orm.public.Article.where({ id }).delete()`                     |
+| `updateMany` / `deleteMany`              | `.where(...).updateAll({ ... })` / `.where(...).deleteAll()`       |
+| `count()`                                | `.aggregate((a) => ({ db: a.count() }))`                           |
+| hiba `P2002` (egyedi érték ütközés)      | `sqlState === "23505"`                                             |
+| hiba `P2003` (idegen kulcs)              | `sqlState === "23503"`                                             |
+| hiba `P2025` (nincs ilyen rekord)        | az `update` / `delete` `null`-t ad vissza                          |
 
 A kérések a `tests.http` állományban vannak (VS Code REST Client, a projekt gyökerében).
 
@@ -1198,7 +1198,7 @@ A kérések a `tests.http` állományban vannak (VS Code REST Client, a projekt 
 - **A `.env` betöltése:** a Next.js magától betölti, a Prisma CLI a `prisma.config.ts`, a saját scriptek (pl. seed) a `prisma/db.ts` `import "dotenv/config"` sora miatt.
 - **`Type 'string' is not assignable to type 'Varchar<200>'`:** a `Varchar(n)` mezőkbe típuskényszerítéssel kell írni (`... as Varchar<200>`, lásd 7. pont), vagy a contractban `String` típust kell használni.
 - **`NumericString` / `Decimal` mezők:** szövegként jönnek vissza (`"3990.00"`), számolni a `Number(...)` alakkal lehet.
-- **Az URL paraméter szöveg:** `Number(id)`, és `Number.isNaN(...)` ellenőrzés kell.
+- **Az URL paraméter szöveg:** `Number(id)`, és `!Number.isInteger(id) || id < 1` ellenőrzés kell (a `Number.isNaN` a `1.5` és a `-3` értéket átengedi).
 - **CLI kimenet:** egyes környezetekben (pl. nem interaktív terminálban) a Prisma CLI JSON sorokat ír ki. Olvashatóbb a `--format markdown` kapcsolóval.
 - **`prisma-8.md`:** az `orm init` által létrehozott rövid Prisma 8 összefoglaló, érdemes elolvasni.
 - **AI-kódolóügynökök:** a `prisma skills sync` a Prisma 8 aktuális tudását teszi elérhetővé az ügynököknek (pl. Claude, Cursor). Tanulói projektben nem szükséges.
