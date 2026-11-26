@@ -3,13 +3,12 @@
 
 // Author and Article are connected via a one-to-many (1:N) relationship,
 // where an Author can have many Articles, and each Article belongs to one Author.
-
 model Author {
-  id        Int               @id() @default(autoincrement())
-  createdAt TimestamptzJsDate @default(now()) @map("created_at")
-  email     String            @unique()
+  id        Int                @id() @default(autoincrement())
+  createdAt DateTime           @default(now()) @map("created_at")
+  email     String             @unique()
   name      String?
-  updatedAt TimestamptzJsDate @onCreate(now()) @onUpdate(now()) @map("updated_at")
+  updatedAt temporal.UpdatedAt @map("updated_at")
   username  String?
 
   // connection field:
@@ -24,13 +23,13 @@ model Article {
   id          Int                @id() @default(autoincrement())
   authorId    Int                @map("author_id")
   content     String?
-  createdAt   TimestamptzJsDate  @default(now()) @map("created_at")
+  createdAt   DateTime           @default(now()) @map("created_at")
   title       String
-  updatedAt   TimestamptzJsDate  @onCreate(now()) @onUpdate(now()) @map("updated_at")
+  updatedAt   temporal.UpdatedAt @map("updated_at")
 
   published   Boolean?
   rating      Int?
-  publishedAt TimestamptzJsDate? @map("published_at")
+  publishedAt DateTime?          @map("published_at")
 
   // connection field:
   author      Author             @relation(fields: [authorId], references: [id], map: "article_author_id_fkey")
@@ -39,6 +38,6 @@ model Article {
   @@check(expression: sql`rating BETWEEN 1 AND 5`, name: "article_rating_range")
   // if the article is not published (published = false), it cannot have a publication date
   @@check(expression: sql`published OR published_at IS NULL`, name: "article_published_date")
-  @@index([authorId])  // Prisma has no field-level indexes like SQL, so the foreign key field needs a model-level index
+  @@index([authorId]) // Prisma has no field-level indexes like SQL, so the foreign key field needs a model-level index
   @@map("article")
 }

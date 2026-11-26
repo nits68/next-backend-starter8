@@ -32,7 +32,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
     "prettier": "^3.10.1",
-    "prisma": "^8.0.0-rc.35",
+    "prisma": "^8.0.0-rc.36",
     "tsx": "^4.23.15",
     "typescript": "^5",
     "typescript-eslint": "^8.74.0"
