@@ -18,10 +18,10 @@ DROP TABLE IF EXISTS author;
 -- Szerzők (model Author → tábla: author)
 CREATE TABLE author (
   id         SERIAL      NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  created_at TIMESTAMPTZ(3) NOT NULL DEFAULT now(),
   email      TEXT        NOT NULL,
   name       TEXT,
-  updated_at TIMESTAMPTZ NOT NULL, -- a Prisma tölti ki (@onCreate / @onUpdate), itt az INSERT
+  updated_at TIMESTAMPTZ(3) NOT NULL, -- a Prisma tölti ki (@onCreate / @onUpdate), itt az INSERT
   username   TEXT,
   CONSTRAINT author_pkey PRIMARY KEY (id),
   CONSTRAINT author_email_key UNIQUE (email), -- @unique
@@ -34,13 +34,13 @@ CREATE TABLE article (
   id         SERIAL      NOT NULL,
   author_id  INTEGER     NOT NULL,
   content    TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  created_at TIMESTAMPTZ(3) NOT NULL DEFAULT now(),
   title      TEXT        NOT NULL,
-  updated_at TIMESTAMPTZ NOT NULL,
+  updated_at TIMESTAMPTZ(3) NOT NULL,
   -- opcionális mezők (NULL is lehet): logikai, szám, dátum-idő
   published    BOOLEAN,
   rating       INTEGER,
-  published_at TIMESTAMPTZ,
+  published_at TIMESTAMPTZ(3),
   CONSTRAINT article_pkey PRIMARY KEY (id),
   CONSTRAINT article_author_id_fkey FOREIGN KEY (author_id) REFERENCES author (id),
   -- @@check: az értékelés 1 és 5 között (NULL megengedett)
